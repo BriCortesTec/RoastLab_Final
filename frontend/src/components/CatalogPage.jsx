@@ -1,0 +1,248 @@
+import { useMemo, useState } from 'react';
+import { MODULES } from '../data/demoData.js';
+import Icon from './Icon.jsx';
+import EmptyState from './EmptyState.jsx';
+import '../styles/catalogs.css';
+export default function CatalogPage({ kind, items, relatedCafes, onSave, notify }) {
+  const meta = MODULES[kind];
+  const [search,setSearch]=useState(''); 
+  const [page,setPage]=useState(1); 
+  const [modal,setModal]=useState(false); 
+  const [editing,setEditing]=useState(null); 
+  const [error,setError]=useState('');
+  const filtered=useMemo(()=>items.filter(item=>Object.values(item).join(' ').toLowerCase().includes(search.toLowerCase())),[items,search]);
+  const pageSize=6; const pageCount=Math.max(1,Math.ceil(filtered.length/pageSize)); const rows=filtered.slice((page-1)*pageSize,page*pageSize);
+  const open=(item=null)=>{
+    setEditing(item);setError('');setModal(true);
+    };
+
+  const save = (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const item = {
+      ...(editing || {}),
+      id: editing?.id || Date.now()
+    };
+
+    meta.fields.forEach(([key, , type]) => {
+      item[key] = type === 'number'
+        ? Number(form.get(key) || 0)
+        : String(form.get(key) || '').trim();
+    });
+
+    if (meta.fields.some(([key, , , required]) => required && !item[key])) {
+      return setError('Completa todos los campos obligatorios.');
+    }
+
+    if (kind === 'profiles' && item.finalTemp <= item.initialTemp) {
+      return setError('La temperatura final debe superar la inicial.');
+    }
+
+    onSave(
+      editing
+        ? items.map((row) => (row.id === editing.id ? item : row))
+        : [item, ...items]
+    );
+    setModal(false);
+    notify(`${meta.singular[0].toUpperCase() + meta.singular.slice(1)} guardado correctamente.`);
+  };
+
+  const remove = (item) => {
+    if (window.confirm(`¿Eliminar “${item.name || item.code}”?`)) {
+      onSave(items.filter((row) => row.id !== item.id));
+      notify('Registro eliminado.');
+    }
+  };
+
+  return (
+    <section className="panel data-panel">
+      <div className="panel-head data-panel-head">
+        <div>
+          <h3>{meta.label}</h3>
+          <p>{meta.description}</p>
+        </div>
+        <button className="button button-primary" onClick={() => open()}>
+          <Icon name="plus" size={17} /> Agregar {meta.singular}
+        </button>
+      </div>
+
+      <div className="table-tools">
+        <label className="search-box">
+          <Icon name="search" size={17} />
+          <input
+            placeholder={`Buscar ${meta.label.toLowerCase()}…`}
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
+        </label>
+        <span className="result-count">{filtered.length} registros</span>
+      </div>
+
+      <div className="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              {meta.columns.map(([, title]) => (
+                <th key={title}>{title}</th>
+              ))}
+              <th className="action-col">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((item) => (
+              <tr key={item.id}>
+                {meta.columns.map(([key]) => (
+                  <td key={key}>
+                    {key === 'weight'
+                      ? `${Number(item[key]).toFixed(2)} kg`
+                      : key === 'initialTemp' || key === 'finalTemp'
+                        ? `${item[key]} °C`
+                        : key === 'duration'
+                          ? `${item[key]} min`
+                          : key === 'harvest'
+                            ? item[key] || '—'
+                            : key === 'level'
+                              ? (
+                                <span className={`level-badge level-${item[key]?.toLowerCase()}`}>
+                                  {item[key]}
+                                </span>
+                              )
+                              : item[key] || '—'}
+                  </td>
+                ))}
+                <td>
+                  <div className="row-actions">
+                    <button onClick={() => open(item)}>Editar</button>
+                    <button className="delete-action" onClick={() => remove(item)}>
+                      Eliminar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {rows.length === 0 && (
+              <tr>
+                <td colSpan={meta.columns.length + 1}>
+                  <EmptyState
+                    title="No encontramos resultados"
+                    detail="Prueba con otra búsqueda o agrega un registro."
+                  />
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="table-footer">
+        <span>
+          Página {page} de {pageCount}
+        </span>
+        <div>
+          <button
+            className="button button-outline button-small"
+            disabled={page <= 1}
+            onClick={() => setPage(page - 1)}
+          >
+            Anterior
+          </button>
+          <button
+            className="button button-outline button-small"
+            disabled={page >= pageCount}
+            onClick={() => setPage(page + 1)}
+          >
+            Siguiente
+          </button>
+        </div>
+      </div>
+
+      {modal && (
+        <div
+          className="modal-overlay"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setModal(false);
+          }}
+        >
+          <form className="modal-card" onSubmit={save}>
+            <div className="modal-header">
+              <div>
+                <span className="eyebrow">CATÁLOGO ROASTLAB</span>
+                <h3>
+                  {editing ? 'Editar' : 'Agregar'} {meta.singular}
+                </h3>
+              </div>
+              <button
+                type="button"
+                className="icon-button"
+                aria-label="Cerrar"
+                onClick={() => setModal(false)}
+              >
+                <Icon name="close" />
+              </button>
+            </div>
+
+            <div className="modal-fields">
+              {meta.fields.map(([key, label, type, required, options]) => (
+                <label
+                  className={`field ${key === 'notes' || key === 'description' ? 'field-wide' : ''}`}
+                  key={key}
+                >
+                  {label}
+                  {type === 'select' ? (
+                    <select
+                      className="input"
+                      name={key}
+                      required={required}
+                      defaultValue={editing?.[key] || ''}
+                    >
+                      <option value="" disabled>
+                        Selecciona…
+                      </option>
+                      {(key === 'coffee'
+                        ? relatedCafes.map((item) => item.name)
+                        : options
+                      ).map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      className="input"
+                      type={type}
+                      name={key}
+                      required={required}
+                      min={type === 'number' ? 0 : undefined}
+                      step={type === 'number' ? 'any' : undefined}
+                      defaultValue={editing?.[key] ?? ''}
+                      placeholder={type === 'number' ? '0' : ''}
+                    />
+                  )}
+                </label>
+              ))}
+            </div>
+
+            {error && <div className="error-note">{error}</div>}
+
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="button button-outline"
+                onClick={() => setModal(false)}
+              >
+                Cancelar
+              </button>
+              <button className="button button-primary">
+                Guardar {meta.singular}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+    </section>
+  );
+}

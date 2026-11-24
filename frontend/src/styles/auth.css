@@ -1,0 +1,154 @@
+/* Estilos de auth */
+
+.brand-mobile {
+  display: none;
+}
+
+.auth-layout {
+  display: grid;
+  grid-template-columns: minmax(390px,47%) 1fr;
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.auth-photo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100vh;
+  padding: 42px 7.5%;
+  overflow: hidden;
+  color: #fff;
+  background: #173325 url('../assets/granos-cafe.jpg') center/cover no-repeat;
+}
+
+.photo-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,#10281d8c 0%,#152d20a6 48%,#10281de8 100%);
+}
+
+.auth-photo>*:not(.photo-shade) {
+  position: relative;
+  z-index: 1;
+}
+
+.photo-caption {
+  max-width: 470px;
+  margin-bottom: 40px;
+}
+
+.photo-caption .eyebrow {
+  color: #e2c69b;
+}
+
+.photo-caption h1 {
+  color: #fff;
+  font-size: clamp(40px,5vw,64px);
+  line-height: 1.05;
+  letter-spacing: -.035em;
+  margin: 17px 0;
+}
+
+.photo-caption p {
+  max-width: 360px;
+  color: #f3eee5d9;
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.photo-credit {
+  color: #f1e9dcad;
+  font-size: 11px;
+  letter-spacing: .05em;
+}
+
+.auth-panel {
+  display: grid;
+  place-items: center;
+  padding: 48px 30px;
+}
+
+.auth-card {
+  width: min(100%,420px);
+}
+
+.auth-card h2 {
+  font-size: 35px;
+  letter-spacing: -.03em;
+  margin: 11px 0 6px;
+}
+
+.auth-card>.muted {
+  margin-bottom: 24px;
+}
+
+.auth-form {
+  display: grid;
+  gap: 16px;
+}
+
+.auth-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.auth-switch {
+  text-align: center;
+  margin: 25px 0 34px;
+  color: #7d857c;
+  font-size: 13px;
+}
+
+.auth-switch button {
+  border: 0;
+  background: none;
+  color: var(--green);
+  font-weight: 700;
+}
+
+.auth-foot {
+  text-align: center;
+  color: #a0a59d;
+  font-size: 11px;
+}
+
+@media (max-width:740px) {
+  .auth-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-photo {
+    display: none;
+  }
+
+  .auth-panel {
+    min-height: 100vh;
+    padding: 28px 22px;
+  }
+
+  .brand-mobile {
+    display: flex;
+    margin-bottom: 38px;
+  }
+
+  .auth-card h2 {
+    font-size: 31px;
+  }
+
+  .auth-two {
+    gap: 9px;
+  }
+
+  .auth-two .input {
+    padding: 10px 8px;
+  }
+}
+
+@media (max-width:390px) {
+  .auth-panel {
+    padding: 20px 17px;
+  }
+}

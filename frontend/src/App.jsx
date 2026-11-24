@@ -1,74 +1,181 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { INITIAL_DATA } from './data/demoData.js';
+import { NAVIGATION, PAGE_LABELS, ROLE_NAMES } from './data/navigation.js';
 import Login from './pages/Login.jsx';
-import Home from './pages/Home.jsx';
-import Products from './pages/Products.jsx';
-import Profile from './pages/Profile.jsx';
-import Settings from './pages/Settings.jsx';
+import Dashboard from './pages/Dashboard.jsx';
+import Cafes from './pages/Cafes.jsx';
+import Lots from './pages/Lots.jsx';
+import Profiles from './pages/Profiles.jsx';
+import RoastForm from './pages/RoastForm.jsx';
+import History from './pages/History.jsx';
+import Reports from './pages/Reports.jsx';
 import Sidebar from './components/Sidebar.jsx';
-import Navbar from './components/Navbar.jsx';
+import Topbar from './components/Topbar.jsx';
+import Toast from './components/Toast.jsx';
 
-const VIEW_INFO = {
-  dashboard: { breadcrumb: 'Inicio', title: 'Inicio' },
-  productos: { breadcrumb: 'Productos', title: 'Productos' },
-  perfil: { breadcrumb: 'Perfil', title: 'Perfil' },
-  configuracion: { breadcrumb: 'Configuración', title: 'Configuración' },
-};
+function readUser() {
+  try {
+    return JSON.parse(sessionStorage.getItem('roastlab_user'));
+  } catch {
+    return null;
+  }
+}
 
-// Si la URL trae ?page=..., el enlace apunta a la tabla de productos.
-const urlHasTableParams = () => new URLSearchParams(window.location.search).has('page');
+function readData() {
+  try {
+    return {
+      ...INITIAL_DATA,
+      ...JSON.parse(localStorage.getItem('roastlab_data'))
+    };
+  } catch {
+    return INITIAL_DATA;
+  }
+}
 
 export default function App() {
-  // Estado de autenticación: null = sin sesión (no se puede ver el sistema).
-  const [user, setUser] = useState(null);
-  const [activeView, setActiveView] = useState(() => (urlHasTableParams() ? 'productos' : 'dashboard'));
+  const [user, setUser] = useState(readUser);
+  const [page, setPage] = useState('dashboard');
+  const [data, setData] = useState(readData);
+  const [toastMessage, setToastMessage] = useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Botones atrás/adelante del navegador: si la URL vuelve a tener parámetros de la tabla, se muestra la tabla.
-  useEffect(() => {
-    const handlePopState = () => {
-      if (urlHasTableParams()) setActiveView('productos');
-    };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  const demoMode = !import.meta.env.VITE_API_URL;
 
-  const handleLogin = (loggedUser) => {
-    setUser(loggedUser);
+  const notify = (message) => {
+    setToastMessage(message);
+    window.setTimeout(() => setToastMessage(''), 2800);
   };
 
-  const handleLogout = () => {
+  const saveData = (updatedData) => {
+    setData(updatedData);
+    localStorage.setItem('roastlab_data', JSON.stringify(updatedData));
+  };
+
+  const signIn = (newUser) => {
+    setUser(newUser);
+    sessionStorage.setItem('roastlab_user', JSON.stringify(newUser));
+  };
+
+  const signOut = () => {
     setUser(null);
-    setActiveView('dashboard');
-    window.history.replaceState({}, '', window.location.pathname);
+    sessionStorage.removeItem('roastlab_user');
+    localStorage.removeItem('roastlab_token');
   };
 
-  const handleNavigate = (viewId) => {
-    // Fuera de la tabla se limpian los parámetros de la URL.
-    if (viewId !== 'productos') {
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-    setActiveView(viewId);
+  const navigate = (nextPage) => {
+    setPage(nextPage);
+    setMobileMenuOpen(false);
   };
 
-  // Protección de la vista: sin usuario solo se muestra el login.
   if (!user) {
-    return <Login onLogin={handleLogin} />;
+    return <Login onLogin={signIn} />;
   }
 
-  const info = VIEW_INFO[activeView];
+  const allowedPages = NAVIGATION[user.role] || NAVIGATION.tostador;
+  const activePage = allowedPages.includes(page) ? page : 'dashboard';
+  const pageTitle = PAGE_LABELS[activePage];
+  let pageContent;
 
-  let content;
-  if (activeView === 'productos') content = <Products />;
-  else if (activeView === 'perfil') content = <Profile user={user} />;
-  else if (activeView === 'configuracion') content = <Settings />;
-  else content = <Home user={user} onNavigate={handleNavigate} />;
+  if (activePage === 'dashboard') {
+    pageContent = <Dashboard user={user} data={data} navigate={navigate} />;
+  } else if (activePage === 'cafes') {
+    pageContent = (
+      <Cafes
+        items={data.cafes}
+        onSave={(cafes) => saveData({ ...data, cafes })}
+        notify={notify}
+      />
+    );
+  } else if (activePage === 'lots') {
+    pageContent = (
+      <Lots
+        items={data.lots}
+        cafes={data.cafes}
+        onSave={(lots) => saveData({ ...data, lots })}
+        notify={notify}
+      />
+    );
+  } else if (activePage === 'profiles') {
+    pageContent = (
+      <Profiles
+        items={data.profiles}
+        onSave={(profiles) => saveData({ ...data, profiles })}
+        notify={notify}
+      />
+    );
+  } else if (activePage === 'roasts') {
+    pageContent = (
+      <RoastForm
+        data={data}
+        onSave={(roast) => {
+          const lots = data.lots.map((lot) =>
+            lot.code === roast.lotCode
+              ? { ...lot, weight: Number((Number(lot.weight) - roast.input).toFixed(2)) }
+              : lot
+          );
+          saveData({ ...data, lots, roasts: [roast, ...data.roasts] });
+          navigate('history');
+          notify('Tueste guardado.');
+        }}
+      />
+    );
+  } else if (activePage === 'history') {
+    pageContent = <History data={data} />;
+  } else {
+    pageContent = <Reports data={data} />;
+  }
 
   return (
-    <div className="app-shell">
-      <Sidebar activeView={activeView} onNavigate={handleNavigate} user={user} onLogout={handleLogout} />
-      <div className="app-main">
-        <Navbar user={user} breadcrumb={info.breadcrumb} title={info.title} onLogout={handleLogout} />
-        <main className="app-content">{content}</main>
-      </div>
+    <div className="app-layout">
+      <Sidebar
+        user={user}
+        activePage={activePage}
+        onNavigate={navigate}
+        onLogout={signOut}
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+      />
+
+      <main className="main-area">
+        <Topbar
+          user={user}
+          title={pageTitle}
+          demoMode={demoMode}
+          onOpenMenu={() => setMobileMenuOpen(true)}
+          onNotify={() => notify('No tienes notificaciones nuevas.')}
+        />
+
+        <div className="page-wrap">
+          <div className="page-heading">
+            <div>
+              <span className="eyebrow">
+                ROASTLAB · {(ROLE_NAMES[user.role] || ROLE_NAMES.tostador).toUpperCase()}
+              </span>
+              <h1>{pageTitle}</h1>
+            </div>
+
+            {activePage === 'dashboard' && (
+              <div className="today-chip">
+                <span>☀</span>{' '}
+                {new Intl.DateTimeFormat('es-MX', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long'
+                }).format(new Date())}
+              </div>
+            )}
+          </div>
+
+          <div className="demo-banner">
+            <span>ℹ</span> Los catálogos de esta versión guardan cambios en este
+            navegador; requieren endpoints backend para guardar en MySQL.
+          </div>
+
+          {pageContent}
+        </div>
+      </main>
+
+      <Toast message={toastMessage} />
     </div>
   );
 }

@@ -1,0 +1,413 @@
+/* Base compartida */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
+
+:root {
+  font-family: 'DM Sans',sans-serif;
+  color: #252d25;
+  background: #f7f7f2;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --green: #244c39;
+  --deep: #18382b;
+  --gold: #bc8951;
+  --ink: #28332d;
+  --muted: #80877f;
+  --line: #e9eae3;
+  --paper: #fff;
+  --cream: #f7f7f2;
+  --shadow: 0 7px 28px #2033260b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--cream);
+  font-size: 14px;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #bd8b5366;
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: 'Playfair Display',Georgia,serif;
+  color: var(--deep);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.eyebrow {
+  color: #a1845e;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .16em;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--deep);
+  font-family: 'Playfair Display',serif;
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -.04em;
+}
+
+.brand-highlight {
+  color: #bd8952;
+}
+
+.brand-icon {
+  display: grid;
+  place-items: center;
+  width: 37px;
+  height: 37px;
+  border-radius: 12px;
+  color: #fff;
+  background: var(--green);
+}
+
+.brand-light {
+  color: #fff;
+}
+
+.brand-light .brand-icon {
+  color: var(--deep);
+  background: #f2e6d2;
+}
+
+.demo-note,
+.error-note {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 18px;
+  padding: 11px 13px;
+  border-radius: 9px;
+  background: #f3f6ef;
+  color: #526b50;
+  font-size: 12px;
+}
+
+.demo-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #81a874;
+}
+
+.error-note {
+  background: #fff1ed;
+  color: #a44230;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: #455348;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.input {
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid #e3e7df;
+  border-radius: 8px;
+  background: #fff;
+  color: #28332d;
+  font-weight: 400;
+  transition: .15s;
+}
+
+.input::placeholder {
+  color: #adb2ac;
+}
+
+.input:focus {
+  border-color: #829886;
+  outline: 0;
+  box-shadow: 0 0 0 3px #244c3912;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 11px 16px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background .15s,border-color .15s,transform .15s;
+}
+
+.button:active {
+  transform: translateY(1px);
+}
+
+.button-primary {
+  color: #fff;
+  background: var(--green);
+}
+
+.button-primary:hover {
+  background: var(--deep);
+}
+
+.button-white {
+  color: var(--deep);
+  background: #fff;
+}
+
+.button-white:hover {
+  background: #f4eee4;
+}
+
+.button-outline {
+  border-color: #e1e5dc;
+  background: #fff;
+  color: #556258;
+}
+
+.button-outline:hover {
+  background: #f6f7f3;
+}
+
+.button-full {
+  width: 100%;
+  margin-top: 4px;
+  padding: 13px;
+}
+
+.button-small {
+  padding: 7px 11px;
+  font-size: 12px;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+
+.brand-sidebar {
+  padding: 0 10px 22px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #758077;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.nav-item:hover {
+  background: #f6f7f3;
+  color: var(--green);
+}
+
+.nav-active,
+.nav-active:hover {
+  background: #eaf0eb;
+  color: var(--green);
+  font-weight: 700;
+}
+
+.nav-plus {
+  margin-left: auto;
+  font-size: 17px;
+}
+
+.help-mark {
+  display: grid;
+  place-items: center;
+  width: 23px;
+  height: 23px;
+  border: 1px solid #c8b18d;
+  border-radius: 50%;
+  color: #9d784c;
+  font-size: 12px;
+}
+
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.mode-live {
+  background: #edf4ed;
+  color: #507558;
+}
+
+.mode-live i {
+  background: #6ba873;
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #667168;
+}
+
+.icon-button:hover {
+  background: #f2f4ef;
+}
+
+.top-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #59645b;
+  font-size: 11px;
+}
+
+.panel {
+  border: 1px solid #e9ebe4;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 16px;
+}
+
+.panel-head h3 {
+  margin: 0 0 4px;
+  font-size: 17px;
+}
+
+.panel-head p {
+  margin: 0;
+  color: #929990;
+  font-size: 11px;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 7px;
+  border-radius: 12px;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.status-done {
+  background: #eaf3e9;
+  color: #57805a;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  white-space: nowrap;
+}
+
+thead {
+  background: #f7f8f4;
+}
+
+th {
+  padding: 10px 12px;
+  color: #899087;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .035em;
+}
+
+td {
+  padding: 12px;
+  border-bottom: 1px solid #f0f1ec;
+  color: #626d63;
+  font-size: 10px;
+}
+
+td b {
+  color: #49564c;
+  font-weight: 600;
+}
+
+tbody tr:hover {
+  background: #fcfcfa;
+}
+
+.field-wide {
+  grid-column: 1/-1;
+}
+
+.error-note {
+  margin-top: 12px;
+}
+
+@media (max-width:740px) {
+  .top-user>span:last-child {
+    display: none;
+  }
+
+  .panel-head h3 {
+    font-size: 15px;
+  }
+
+  .panel-head p {
+    font-size: 10px;
+  }
+}
