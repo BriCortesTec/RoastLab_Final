@@ -1,0 +1,26 @@
+meta {
+  name: Login gerente (obtiene token JWT)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "gerente@roastlab.site",
+    "password": "{{passwordGerente}}"
+  }
+}
+
+script:post-response {
+  bru.setEnvVar("tokenGerente", res.body.token);
+}
+
+assert {
+  res.status: eq 200
+}

@@ -1,0 +1,32 @@
+meta {
+  name: ERROR a propósito: café sin nombre (400)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/cafes
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "name": "",
+    "origin": "Chiapas"
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+tests {
+  test("mensaje bajo el campo name", function() {
+    expect(res.body.fieldErrors).to.have.property("name");
+  });
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Listar usuarios como admin (paginado)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/usuarios?page=0&size=5&role=tostador
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("solo tostadores", function() {
+    res.body.content.forEach(function(u) { expect(u.role).to.equal("tostador"); });
+  });
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Tostador solo ve sus propios tuestes
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/tuestes?page=0&size=10
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenTostador}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("tostador@roastlab.site tiene 2 tuestes en el seed", function() {
+    expect(res.body.totalElements).to.equal(2);
+  });
+}

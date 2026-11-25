@@ -1,5 +1,9 @@
 package com.roastlab.backend.service;
 
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
+import com.roastlab.backend.dto.PageResponse;
+import com.roastlab.backend.exception.NotFoundException;
 import com.roastlab.backend.dto.CafeDTO;
 import com.roastlab.backend.entity.Cafe;
 import com.roastlab.backend.repository.CafeRepository;
@@ -18,8 +22,9 @@ public class CafeService {
     }
 
     @Transactional(readOnly = true)
-    public List<CafeDTO> listar() {
-        return cafeRepository.findAll().stream().map(this::toDTO).toList();
+    public PageResponse<CafeDTO> buscar(String search, int page, int size) {
+        Pageable pageable = Paginacion.de(page, size, Sort.by("nombreCafe").ascending());
+        return PageResponse.of(cafeRepository.buscar(Paginacion.limpiar(search), pageable).map(this::toDTO));
     }
 
     @Transactional(readOnly = true)
@@ -46,7 +51,7 @@ public class CafeService {
 
     private Cafe buscarEntidad(Integer id) {
         return cafeRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("No existe el café con id: " + id));
+            .orElseThrow(() -> new NotFoundException("No existe el café con id: " + id));
     }
 
     private void aplicarDatos(Cafe cafe, CafeDTO dto) {

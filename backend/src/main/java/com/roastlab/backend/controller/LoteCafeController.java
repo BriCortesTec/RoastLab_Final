@@ -5,8 +5,7 @@ import com.roastlab.backend.dto.LoteCafeDTO;
 import com.roastlab.backend.service.LoteCafeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import com.roastlab.backend.dto.PageResponse;
 
 @RestController
 @RequestMapping("/api/lotes")
@@ -19,8 +18,11 @@ public class LoteCafeController {
     }
 
     @GetMapping
-    public List<LoteCafeDTO> listar() {
-        return loteCafeService.listar();
+    public PageResponse<LoteCafeDTO> buscar(
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return loteCafeService.buscar(search, page, size);
     }
 
     @GetMapping("/{id}")

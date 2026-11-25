@@ -1,0 +1,33 @@
+meta {
+  name: Crear café como admin
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/cafes
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "name": "Café de prueba Bruno",
+    "origin": "Oaxaca, México",
+    "variety": "Typica",
+    "process": "Lavado",
+    "notes": "Creado desde Bruno"
+  }
+}
+
+script:post-response {
+  bru.setEnvVar("cafeId", res.body.id);
+}
+
+assert {
+  res.status: eq 201
+}

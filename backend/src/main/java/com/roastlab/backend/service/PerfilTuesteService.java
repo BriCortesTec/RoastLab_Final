@@ -1,5 +1,8 @@
 package com.roastlab.backend.service;
 
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
+import com.roastlab.backend.exception.NotFoundException;
 import com.roastlab.backend.dto.*;
 import com.roastlab.backend.entity.*;
 import com.roastlab.backend.repository.PerfilTuesteRepository;
@@ -19,8 +22,9 @@ public class PerfilTuesteService {
     }
 
     @Transactional(readOnly = true)
-    public List<PerfilTuesteDTO> listar() {
-        return perfilRepository.findAll().stream().map(this::toDTO).toList();
+    public PageResponse<PerfilTuesteDTO> buscar(String search, int page, int size) {
+        Pageable pageable = Paginacion.de(page, size, Sort.by("nombre").ascending());
+        return PageResponse.of(perfilRepository.buscar(Paginacion.limpiar(search), pageable).map(this::toDTO));
     }
 
     @Transactional(readOnly = true)
@@ -46,7 +50,7 @@ public class PerfilTuesteService {
 
     private PerfilTueste buscarEntidad(Integer id) {
         return perfilRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("No existe el perfil con id: " + id));
+            .orElseThrow(() -> new NotFoundException("No existe el perfil con id: " + id));
     }
 
     private void aplicarDatos(PerfilTueste perfil, PerfilTuesteDTO dto) {

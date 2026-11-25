@@ -1,0 +1,19 @@
+meta {
+  name: Eliminar el café creado
+  type: http
+  seq: 6
+}
+
+delete {
+  url: {{baseUrl}}/cafes/{{cafeId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+assert {
+  res.status: eq 204
+}

@@ -1,5 +1,9 @@
 package com.roastlab.backend.service;
 
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
+import com.roastlab.backend.dto.PageResponse;
+import com.roastlab.backend.exception.NotFoundException;
 import com.roastlab.backend.dto.LoteCafeDTO;
 import com.roastlab.backend.entity.Cafe;
 import com.roastlab.backend.entity.LoteCafe;
@@ -22,8 +26,9 @@ public class LoteCafeService {
     }
 
     @Transactional(readOnly = true)
-    public List<LoteCafeDTO> listar() {
-        return loteRepository.findAll().stream().map(this::toDTO).toList();
+    public PageResponse<LoteCafeDTO> buscar(String search, int page, int size) {
+        Pageable pageable = Paginacion.de(page, size, Sort.by("codigoLote").ascending());
+        return PageResponse.of(loteRepository.buscar(Paginacion.limpiar(search), pageable).map(this::toDTO));
     }
 
     @Transactional(readOnly = true)
@@ -49,7 +54,7 @@ public class LoteCafeService {
 
     private LoteCafe buscarEntidad(Integer id) {
         return loteRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("No existe el lote con id: " + id));
+            .orElseThrow(() -> new NotFoundException("No existe el lote con id: " + id));
     }
 
     private void aplicarDatos(LoteCafe lote, LoteCafeDTO dto) {
@@ -57,7 +62,7 @@ public class LoteCafeService {
             throw new IllegalArgumentException("El lote debe estar asociado a un café.");
         }
         Cafe cafe = cafeRepository.findById(dto.cafeId())
-            .orElseThrow(() -> new IllegalArgumentException("No existe el café con id: " + dto.cafeId()));
+            .orElseThrow(() -> new NotFoundException("No existe el café con id: " + dto.cafeId()));
 
         lote.setCodigoLote(dto.code());
         lote.setCafe(cafe);

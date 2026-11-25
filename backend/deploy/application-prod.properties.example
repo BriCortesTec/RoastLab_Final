@@ -1,0 +1,19 @@
+# Copiar a /opt/roastlab/config/application-prod.properties en el VPS (chmod 600, dueño roastlab).
+# NUNCA subir el archivo real al repositorio.
+spring.datasource.username=roastlab
+spring.datasource.password=CAMBIAR
+app.jwt.secret=CAMBIAR_BASE64_ALEATORIO_openssl_rand_-base64_48
+
+app.cors.allowed-origins=https://roastlab.site
+app.frontend-url=https://roastlab.site
+
+# Postfix local
+spring.mail.host=localhost
+spring.mail.port=25
+app.mail.from=no-reply@roastlab.site
+
+# Twilio
+twilio.account-sid=CAMBIAR
+twilio.auth-token=CAMBIAR
+twilio.sms-from=+1XXXXXXXXXX
+twilio.whatsapp-from=whatsapp:+14155238886

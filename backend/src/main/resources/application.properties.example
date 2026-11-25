@@ -1,0 +1,22 @@
+# Copia este archivo como application-local.properties (desarrollo)
+# o application-prod.properties (VPS) y llena los valores reales.
+# NUNCA subas el archivo con valores reales a GitHub.
+
+spring.datasource.username=root
+spring.datasource.password=CAMBIAR
+
+# Clave del JWT en BASE64 (minimo 32 bytes). Generala con: openssl rand -base64 48
+app.jwt.secret=CAMBIAR_POR_BASE64_ALEATORIO
+
+# --- Produccion (VPS) ---
+# app.cors.allowed-origins=https://roastlab.site
+# app.frontend-url=https://roastlab.site
+# spring.mail.host=localhost
+# spring.mail.port=25
+# app.mail.from=no-reply@roastlab.site
+
+# --- Twilio (SMS y WhatsApp) ---
+# twilio.account-sid=CAMBIAR
+# twilio.auth-token=CAMBIAR
+# twilio.sms-from=+1XXXXXXXXXX
+# twilio.whatsapp-from=whatsapp:+14155238886

@@ -1,0 +1,32 @@
+meta {
+  name: Login tostador (obtiene token JWT)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "tostador@roastlab.site",
+    "password": "{{passwordTostador}}"
+  }
+}
+
+script:post-response {
+  bru.setEnvVar("tokenTostador", res.body.token);
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("rol tostador", function() {
+    expect(res.body.user.role).to.equal("tostador");
+  });
+}

@@ -21,7 +21,7 @@ public class JwtService {
 
     public JwtService(
             @Value("${app.jwt.secret}") String secret,
-            @Value("${app.jwt.expiration}") long expiration) {
+            @Value("${app.jwt.expiration:7200000}") long expiration) {
 
         this.secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
         this.expiration = expiration;
@@ -32,6 +32,7 @@ public class JwtService {
         Date expiracion = new Date(ahora.getTime() + expiration);
 
         return Jwts.builder()
+                .id(java.util.UUID.randomUUID().toString()) // jti: permite invalidar el token en el logout
                 .subject(email)
                 .issuedAt(ahora)
                 .expiration(expiracion)
@@ -41,6 +42,14 @@ public class JwtService {
 
     public String extraerEmail(String token) {
         return extraerClaim(token, Claims::getSubject);
+    }
+
+    public String extraerJti(String token) {
+        return extraerClaim(token, Claims::getId);
+    }
+
+    public Date extraerExpiracion(String token) {
+        return extraerClaim(token, Claims::getExpiration);
     }
 
     private <T> T extraerClaim(String token, Function<Claims, T> resolver) {

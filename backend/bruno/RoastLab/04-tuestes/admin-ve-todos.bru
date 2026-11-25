@@ -1,0 +1,25 @@
+meta {
+  name: Admin ve todos los tuestes (con filtro)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/tuestes?page=0&size=5&search=Tueste
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("admin ve los 12 del seed", function() {
+    expect(res.body.totalElements).to.equal(12);
+  });
+}

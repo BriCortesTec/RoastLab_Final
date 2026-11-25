@@ -1,0 +1,27 @@
+meta {
+  name: Prueba de SMS (cambia el número por uno verificado en Twilio)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/notificaciones/prueba
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "channel": "sms",
+    "to": "+520000000000",
+    "message": "Prueba SMS desde RoastLab"
+  }
+}
+
+assert {
+  res.status: eq 200
+}

@@ -1,49 +1,52 @@
-
 package com.roastlab.backend.controller;
 
+import com.roastlab.backend.dto.PageResponse;
 import com.roastlab.backend.dto.PerfilTuesteDTO;
 import com.roastlab.backend.service.PerfilTuesteService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/perfiles")
 public class PerfilTuesteController {
 
-    private final PerfilTuesteService perfilTuesteService;
+    private final PerfilTuesteService perfilService;
 
-    public PerfilTuesteController(PerfilTuesteService perfilTuesteService) {
-        this.perfilTuesteService = perfilTuesteService;
+    public PerfilTuesteController(PerfilTuesteService perfilService) {
+        this.perfilService = perfilService;
     }
 
     @GetMapping
-    public List<PerfilTuesteDTO> listar() {
-        return perfilTuesteService.listar();
+    public PageResponse<PerfilTuesteDTO> listar(@RequestParam(defaultValue = "") String search,
+                                                @RequestParam(defaultValue = "0") int page,
+                                                @RequestParam(defaultValue = "8") int size) {
+        return perfilService.buscar(search, page, size);
     }
 
     @GetMapping("/{id}")
     public PerfilTuesteDTO obtener(@PathVariable Integer id) {
-        return perfilTuesteService.obtener(id);
+        return perfilService.obtener(id);
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','GERENTE')")
     @ResponseStatus(HttpStatus.CREATED)
-    public PerfilTuesteDTO crear(@RequestBody PerfilTuesteDTO dto) {
-        return perfilTuesteService.crear(dto);
+    public PerfilTuesteDTO crear(@Valid @RequestBody PerfilTuesteDTO dto) {
+        return perfilService.crear(dto);
     }
 
     @PutMapping("/{id}")
-    public PerfilTuesteDTO actualizar(
-            @PathVariable Integer id,
-            @RequestBody PerfilTuesteDTO dto) {
-        return perfilTuesteService.actualizar(id, dto);
+    @PreAuthorize("hasAnyRole('ADMIN','GERENTE')")
+    public PerfilTuesteDTO actualizar(@PathVariable Integer id, @Valid @RequestBody PerfilTuesteDTO dto) {
+        return perfilService.actualizar(id, dto);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','GERENTE')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void eliminar(@PathVariable Integer id) {
-        perfilTuesteService.eliminar(id);
+        perfilService.eliminar(id);
     }
 }

@@ -1,0 +1,27 @@
+meta {
+  name: Listar cafés (paginación y filtro en servidor)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/cafes?page=0&size=5&search=chiapas
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("respuesta paginada", function() {
+    expect(res.body.content).to.be.an("array");
+    expect(res.body.content.length).to.be.at.most(5);
+    expect(res.body).to.have.property("totalPages");
+  });
+}

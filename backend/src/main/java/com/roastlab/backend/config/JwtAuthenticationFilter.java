@@ -1,5 +1,6 @@
 package com.roastlab.backend.config;
 
+import com.roastlab.backend.repository.TokenRevocadoRepository;
 import com.roastlab.backend.service.CustomUserDetailsService;
 import com.roastlab.backend.service.JwtService;
 import jakarta.servlet.FilterChain;
@@ -20,12 +21,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
+    private final TokenRevocadoRepository tokenRevocadoRepository;
 
     public JwtAuthenticationFilter(
             JwtService jwtService,
-            CustomUserDetailsService userDetailsService) {
+            CustomUserDetailsService userDetailsService,
+            TokenRevocadoRepository tokenRevocadoRepository) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
+        this.tokenRevocadoRepository = tokenRevocadoRepository;
     }
 
     @Override
@@ -53,7 +57,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UserDetails usuario =
                         userDetailsService.loadUserByUsername(email);
 
-                if (jwtService.esTokenValido(token, usuario)) {
+                if (jwtService.esTokenValido(token, usuario)
+                        && !tokenRevocadoRepository.existsByJti(jwtService.extraerJti(token))) {
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(
                                     usuario,
@@ -71,7 +76,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (RuntimeException e) {
-            e.printStackTrace();
+            // Token inválido, vencido o usuario inexistente: la petición sigue sin autenticar (401)
             SecurityContextHolder.clearContext();
         }
 

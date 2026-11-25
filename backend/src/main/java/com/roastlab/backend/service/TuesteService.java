@@ -1,5 +1,10 @@
 package com.roastlab.backend.service;
 
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
+import com.roastlab.backend.security.AuthenticatedUser;
+import com.roastlab.backend.exception.NotFoundException;
 import com.roastlab.backend.dto.*;
 import com.roastlab.backend.entity.*;
 import com.roastlab.backend.repository.*;
@@ -15,22 +20,38 @@ public class TuesteService {
     private final UsuarioRepository usuarioRepository;
     private final PerfilTuesteRepository perfilRepository;
     private final LoteCafeRepository loteRepository;
+    private final NotificacionService notificacionService;
 
     public TuesteService(
         TuesteRepository tuesteRepository,
         UsuarioRepository usuarioRepository,
         PerfilTuesteRepository perfilRepository,
-        LoteCafeRepository loteRepository
+        LoteCafeRepository loteRepository,
+        NotificacionService notificacionService
     ) {
         this.tuesteRepository = tuesteRepository;
         this.usuarioRepository = usuarioRepository;
         this.perfilRepository = perfilRepository;
         this.loteRepository = loteRepository;
+        this.notificacionService = notificacionService;
     }
 
+    /** Los tostadores solo ven sus propios tuestes; admin y gerente ven todos. */
     @Transactional(readOnly = true)
-    public List<TuesteDTO> listar() {
-        return tuesteRepository.findAll().stream().map(this::toDTO).toList();
+    public PageResponse<TuesteDTO> buscar(AuthenticatedUser user, String search, String status, int page, int size) {
+        Integer uid = user.isTostador() ? user.id() : 0;
+        Pageable pageable = Paginacion.de(page, size, Sort.by("fechaTueste").descending());
+        return PageResponse.of(tuesteRepository
+            .buscar(uid, Paginacion.limpiar(status), Paginacion.limpiar(search), pageable).map(this::toDTO));
+    }
+
+    /** Un tostador solo puede ver o modificar sus propios tuestes. */
+    @Transactional(readOnly = true)
+    public void verificarAcceso(Integer id, AuthenticatedUser user) {
+        Tueste tueste = buscarEntidad(id);
+        if (user.isTostador() && !tueste.getUsuario().getIdUsuario().equals(user.id())) {
+            throw new AccessDeniedException("Este tueste pertenece a otro usuario.");
+        }
     }
 
     @Transactional(readOnly = true)
@@ -41,24 +62,39 @@ public class TuesteService {
     public TuesteDTO crear(TuesteDTO dto, Integer usuarioId) {
         Tueste tueste = new Tueste();
         tueste.setUsuario(usuarioRepository.findById(usuarioId)
-            .orElseThrow(() -> new IllegalArgumentException("No existe el usuario con id: " + usuarioId)));
+            .orElseThrow(() -> new NotFoundException("No existe el usuario con id: " + usuarioId)));
         aplicarDatos(tueste, dto);
-        return toDTO(tuesteRepository.save(tueste));
+        Tueste guardado = tuesteRepository.save(tueste);
+        avisarSiSeCompleto(guardado, false);
+        return toDTO(guardado);
     }
 
     public TuesteDTO actualizar(Integer id, TuesteDTO dto) {
         Tueste tueste = buscarEntidad(id);
+        boolean yaCompletado = ESTADO_COMPLETADO.equalsIgnoreCase(tueste.getEstado());
         aplicarDatos(tueste, dto);
-        return toDTO(tuesteRepository.save(tueste));
+        Tueste guardado = tuesteRepository.save(tueste);
+        avisarSiSeCompleto(guardado, yaCompletado);
+        return toDTO(guardado);
     }
 
     public void eliminar(Integer id) {
         tuesteRepository.delete(buscarEntidad(id));
     }
 
+    private static final String ESTADO_COMPLETADO = "Completado";
+
+    /** Dispara correo + SMS + WhatsApp (asíncrono) solo la primera vez que el tueste queda completado. */
+    private void avisarSiSeCompleto(Tueste tueste, boolean yaEstabaCompletado) {
+        if (!yaEstabaCompletado && ESTADO_COMPLETADO.equalsIgnoreCase(tueste.getEstado())) {
+            notificacionService.tuesteCompletado(tueste.getUsuario().getIdUsuario(), tueste.getNombre(),
+                tueste.getPesoSalidaKg(), tueste.getTemperaturaMaxima(), tueste.getDuracionMin());
+        }
+    }
+
     private Tueste buscarEntidad(Integer id) {
         return tuesteRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("No existe el tueste con id: " + id));
+            .orElseThrow(() -> new NotFoundException("No existe el tueste con id: " + id));
     }
 
     private void aplicarDatos(Tueste tueste, TuesteDTO dto) {
@@ -75,7 +111,7 @@ public class TuesteService {
             tueste.setPerfil(null);
         } else {
             tueste.setPerfil(perfilRepository.findById(dto.profileId())
-                .orElseThrow(() -> new IllegalArgumentException("No existe el perfil con id: " + dto.profileId())));
+                .orElseThrow(() -> new NotFoundException("No existe el perfil con id: " + dto.profileId())));
         }
 
         tueste.getMediciones().clear();
@@ -109,7 +145,7 @@ public class TuesteService {
         if (dto.lots() != null) {
             for (TuesteLoteDTO item : dto.lots()) {
                 LoteCafe lote = loteRepository.findById(item.lotId())
-                    .orElseThrow(() -> new IllegalArgumentException("No existe el lote con id: " + item.lotId()));
+                    .orElseThrow(() -> new NotFoundException("No existe el lote con id: " + item.lotId()));
                 TuesteLote relacion = new TuesteLote();
                 relacion.setTueste(tueste);
                 relacion.setLote(lote);

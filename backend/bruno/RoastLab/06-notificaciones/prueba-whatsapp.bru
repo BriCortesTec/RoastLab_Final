@@ -1,0 +1,27 @@
+meta {
+  name: Prueba de WhatsApp (el número debe haber hecho join al sandbox)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/notificaciones/prueba
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "channel": "whatsapp",
+    "to": "+520000000000",
+    "message": "Prueba WhatsApp desde RoastLab"
+  }
+}
+
+assert {
+  res.status: eq 200
+}

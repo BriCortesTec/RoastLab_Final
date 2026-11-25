@@ -1,0 +1,25 @@
+meta {
+  name: Resumen de reportes
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/reportes/resumen
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenGerente}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("incluye totales", function() {
+    expect(res.body).to.have.property("totalRoasts");
+  });
+}

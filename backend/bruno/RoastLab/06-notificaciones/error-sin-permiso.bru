@@ -1,0 +1,19 @@
+meta {
+  name: ERROR a propósito: tostador ve la bitácora (403)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/notificaciones
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenTostador}}
+}
+
+assert {
+  res.status: eq 403
+}

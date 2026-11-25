@@ -1,0 +1,25 @@
+meta {
+  name: Perfil con token (token en header Authorization)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/auth/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("devuelve el correo del admin", function() {
+    expect(res.body.email).to.equal("admin@roastlab.site");
+  });
+}

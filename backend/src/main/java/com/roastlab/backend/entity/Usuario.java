@@ -29,6 +29,9 @@ public class Usuario {
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
 
+    @Column(name = "telefono", length = 20)
+    private String telefono;
+
     @Column(name = "activo", nullable = false)
     private Boolean activo = true;
 
@@ -84,6 +87,14 @@ public class Usuario {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
     }
 
     public Boolean getActivo() {

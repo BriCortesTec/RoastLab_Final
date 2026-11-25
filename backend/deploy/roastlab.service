@@ -1,0 +1,20 @@
+# Copiar a /etc/systemd/system/roastlab.service
+# Luego: systemctl daemon-reload && systemctl enable --now roastlab
+[Unit]
+Description=RoastLab backend (Spring Boot)
+After=network.target mysql.service
+Wants=mysql.service
+
+[Service]
+User=roastlab
+WorkingDirectory=/opt/roastlab
+Environment=SPRING_PROFILES_ACTIVE=prod
+# Heap acotado para convivir con MySQL, Nginx y Postfix en 1 GB de RAM
+ExecStart=/usr/bin/java -Xms128m -Xmx320m -XX:+UseSerialGC -jar /opt/roastlab/backend.jar --spring.config.additional-location=file:/opt/roastlab/config/
+Restart=always
+RestartSec=5
+SuccessExitStatus=143
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

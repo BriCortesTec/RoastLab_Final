@@ -1,0 +1,19 @@
+meta {
+  name: ERROR a propósito: tostador abre tueste de otro usuario (403)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/tuestes/3
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenTostador}}
+}
+
+assert {
+  res.status: eq 403
+}

@@ -1,0 +1,25 @@
+meta {
+  name: ERROR a propósito: tostador intenta crear café (403)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/cafes
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenTostador}}
+}
+
+body:json {
+  {
+    "name": "No debería crearse"
+  }
+}
+
+assert {
+  res.status: eq 403
+}

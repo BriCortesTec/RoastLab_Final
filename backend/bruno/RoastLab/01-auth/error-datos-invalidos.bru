@@ -1,0 +1,31 @@
+meta {
+  name: ERROR a propósito: registro con datos inválidos (400)
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/auth/registro
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "",
+    "surname": "Prueba",
+    "email": "no-es-correo",
+    "password": "debil"
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+tests {
+  test("fieldErrors indica los campos inválidos", function() {
+    expect(res.body.fieldErrors).to.have.property("email");
+    expect(res.body.fieldErrors).to.have.property("password");
+  });
+}
