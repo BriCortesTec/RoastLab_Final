@@ -1,0 +1,67 @@
+package com.roastlab.backend.service;
+
+import com.roastlab.backend.dto.CafeDTO;
+import com.roastlab.backend.entity.Cafe;
+import com.roastlab.backend.repository.CafeRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@Transactional
+public class CafeService {
+    private final CafeRepository cafeRepository;
+
+    public CafeService(CafeRepository cafeRepository) {
+        this.cafeRepository = cafeRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public List<CafeDTO> listar() {
+        return cafeRepository.findAll().stream().map(this::toDTO).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public CafeDTO obtener(Integer id) {
+        return toDTO(buscarEntidad(id));
+    }
+
+    public CafeDTO crear(CafeDTO dto) {
+        Cafe cafe = new Cafe();
+        aplicarDatos(cafe, dto);
+        return toDTO(cafeRepository.save(cafe));
+    }
+
+    public CafeDTO actualizar(Integer id, CafeDTO dto) {
+        Cafe cafe = buscarEntidad(id);
+        aplicarDatos(cafe, dto);
+        return toDTO(cafeRepository.save(cafe));
+    }
+
+    public void eliminar(Integer id) {
+        Cafe cafe = buscarEntidad(id);
+        cafeRepository.delete(cafe);
+    }
+
+    private Cafe buscarEntidad(Integer id) {
+        return cafeRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("No existe el café con id: " + id));
+    }
+
+    private void aplicarDatos(Cafe cafe, CafeDTO dto) {
+        cafe.setNombreCafe(dto.name());
+        cafe.setOrigen(dto.origin());
+        cafe.setVariedad(dto.variety());
+        cafe.setProceso(dto.process());
+        cafe.setNotas(dto.notes());
+    }
+
+    private CafeDTO toDTO(Cafe cafe) {
+        return new CafeDTO(
+            cafe.getIdCafe(), cafe.getNombreCafe(), cafe.getOrigen(),
+            cafe.getVariedad(), cafe.getProceso(), cafe.getNotas(),
+            cafe.getFechaRegistro()
+        );
+    }
+}

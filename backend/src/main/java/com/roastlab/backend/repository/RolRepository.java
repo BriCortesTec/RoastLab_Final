@@ -3,6 +3,7 @@ package com.roastlab.backend.repository;
 import com.roastlab.backend.entity.Rol;
 import org.springframework.data.jpa.repository.JpaRepository;//Proporciona automaticamente operaciones CRUD
 import org.springframework.stereotype.Repository;
+import java.util.Optional;
 
 /*
     Rol:inidica que travajeremos con la entidad de roles
@@ -10,4 +11,5 @@ import org.springframework.stereotype.Repository;
 */
 @Repository // Identifica la interfaz como componente de acceso de datos
 public interface RolRepository extends JpaRepository<Rol, Integer> {
+    Optional<Rol> findByNombre(String nombre);
 }
