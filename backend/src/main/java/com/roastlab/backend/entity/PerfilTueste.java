@@ -1,12 +1,10 @@
-/* 
-    Esta entidad represnta la tabal perfiles_tueste donde aacenamos las config
-    o parametros objeto para realozar un tueste  
- */
 package com.roastlab.backend.entity;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "perfiles_tueste")
@@ -23,23 +21,29 @@ public class PerfilTueste {
     @Column(name = "descripcion", columnDefinition = "TEXT")
     private String descripcion;
 
-    // Temperatura inicial y final: temp objetivo del perfil
+    @Column(name = "notas_sabor", length = 500)
+    private String notasSabor;
+
     @Column(name = "temperatura_inicial", precision = 5, scale = 2)
     private BigDecimal temperaturaInicial;
 
     @Column(name = "temperatura_final", precision = 5, scale = 2)
     private BigDecimal temperaturaFinal;
 
-    // Duración estimada del tueste    
-    @Column(name = "duracion_objetivo_min")
-    private Integer duracionObjetivoMin;
-    
-    // Clasificación, por ej, medio u oscuro
+    @Column(name = "duracion_objetivo_min", precision = 6, scale = 2)
+    private BigDecimal duracionObjetivoMin;
+
     @Column(name = "nivel_tueste", nullable = false, length = 30)
     private String nivelTueste;
 
     @Column(name = "fecha_creacion", insertable = false, updatable = false)
     private LocalDateTime fechaCreacion;
+
+    @OneToMany(mappedBy = "perfil", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MedicionPerfil> mediciones = new ArrayList<>();
+
+    @OneToMany(mappedBy = "perfil", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AjustePerfil> ajustes = new ArrayList<>();
 
     public PerfilTueste() {
     }
@@ -68,7 +72,14 @@ public class PerfilTueste {
         this.descripcion = descripcion;
     }
 
-    // BigDecimal, permiote manejar temp con decimales
+    public String getNotasSabor() {
+        return notasSabor;
+    }
+
+    public void setNotasSabor(String notasSabor) {
+        this.notasSabor = notasSabor;
+    }
+
     public BigDecimal getTemperaturaInicial() {
         return temperaturaInicial;
     }
@@ -85,11 +96,11 @@ public class PerfilTueste {
         this.temperaturaFinal = temperaturaFinal;
     }
 
-    public Integer getDuracionObjetivoMin() {
+    public BigDecimal getDuracionObjetivoMin() {
         return duracionObjetivoMin;
     }
 
-    public void setDuracionObjetivoMin(Integer duracionObjetivoMin) {
+    public void setDuracionObjetivoMin(BigDecimal duracionObjetivoMin) {
         this.duracionObjetivoMin = duracionObjetivoMin;
     }
 
@@ -107,5 +118,21 @@ public class PerfilTueste {
 
     public void setFechaCreacion(LocalDateTime fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
+    }
+
+    public List<MedicionPerfil> getMediciones() {
+        return mediciones;
+    }
+
+    public void setMediciones(List<MedicionPerfil> mediciones) {
+        this.mediciones = mediciones;
+    }
+
+    public List<AjustePerfil> getAjustes() {
+        return ajustes;
+    }
+
+    public void setAjustes(List<AjustePerfil> ajustes) {
+        this.ajustes = ajustes;
     }
 }

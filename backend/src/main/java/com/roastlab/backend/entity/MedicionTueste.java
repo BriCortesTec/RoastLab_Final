@@ -1,6 +1,3 @@
-/*
-    Permite registrar la temperatura real del grano durante el proceso de tostado
-*/
 package com.roastlab.backend.entity;
 
 import jakarta.persistence.*;
@@ -10,7 +7,6 @@ import java.math.BigDecimal;
 @Table(
     name = "mediciones_tueste",
     uniqueConstraints = {
-        //Evita registrar dos mediciones del mismo tueste en el mismo segundo
         @UniqueConstraint(
             name = "uq_medicion_tiempo",
             columnNames = {"id_tueste", "tiempo_segundos"}
@@ -24,18 +20,18 @@ public class MedicionTueste {
     @Column(name = "id_medicion")
     private Integer idMedicion;
 
-    //La clave permite rregistrar muchas medciones para un mismo tueste
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_tueste", nullable = false)
     private Tueste tueste;
 
-    //Indica en que segundo del tueste se tomo la medición
     @Column(name = "tiempo_segundos", nullable = false)
     private Integer tiempoSegundos;
 
-    //Almacena la temp real del grano
     @Column(name = "temperatura_grano_c", nullable = false, precision = 5, scale = 2)
     private BigDecimal temperaturaGranoC;
+
+    @Column(name = "tipo_evento", length = 30)
+    private String tipoEvento;
 
     public MedicionTueste() {
     }
@@ -70,5 +66,13 @@ public class MedicionTueste {
 
     public void setTemperaturaGranoC(BigDecimal temperaturaGranoC) {
         this.temperaturaGranoC = temperaturaGranoC;
+    }
+
+    public String getTipoEvento() {
+        return tipoEvento;
+    }
+
+    public void setTipoEvento(String tipoEvento) {
+        this.tipoEvento = tipoEvento;
     }
 }

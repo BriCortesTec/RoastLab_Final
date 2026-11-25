@@ -1,10 +1,3 @@
-/*
-    Una de las ENTIDADES PRINCIPALES, ya que representa cada proceso de tostado realizado
-    Tres relaciones importantes:
-    - Muchos tuestes pueden pertenecer al mismo usuario
-    - Muchos tuestes pueden utilzar el mismo perfil
-    - Un tueste puede tener muchas mediciones de tempoeratura
-*/
 package com.roastlab.backend.entity;
 
 import jakarta.persistence.*;
@@ -57,9 +50,14 @@ public class Tueste {
     @Column(name = "fecha_registro", insertable = false, updatable = false)
     private LocalDateTime fechaRegistro;
 
-    //La clave Indica que las mediciones pertenecenn a UN tueste y que la foreing key esta administrada desde MedicionTueste
     @OneToMany(mappedBy = "tueste", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MedicionTueste> mediciones = new ArrayList<>();
+
+    @OneToMany(mappedBy = "tueste", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AjusteTueste> ajustes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "tueste", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TuesteLote> lotes = new ArrayList<>();
 
     public Tueste() {
     }
@@ -167,5 +165,20 @@ public class Tueste {
     public void setMediciones(List<MedicionTueste> mediciones) {
         this.mediciones = mediciones;
     }
-}
 
+    public List<AjusteTueste> getAjustes() {
+        return ajustes;
+    }
+
+    public void setAjustes(List<AjusteTueste> ajustes) {
+        this.ajustes = ajustes;
+    }
+
+    public List<TuesteLote> getLotes() {
+        return lotes;
+    }
+
+    public void setLotes(List<TuesteLote> lotes) {
+        this.lotes = lotes;
+    }
+}
