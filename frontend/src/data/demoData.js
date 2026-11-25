@@ -5,9 +5,9 @@ export const INITIAL_DATA = {
     { id: 3, name: 'Las Nubes', origin: 'Oaxaca, México', variety: 'Bourbon', process: 'Honey', notes: 'Miel y caramelo' },
   ],
   lots: [
-    { id: 1, code: 'CH-24-018', coffee: 'Finca La Esperanza', origin: 'Chiapas, México', variety: 'Typica', process: 'Lavado', harvest: '2026-09-12', weight: 42.5 },
-    { id: 2, code: 'VR-24-006', coffee: 'El Mirador', origin: 'Veracruz, México', variety: 'Caturra', process: 'Natural', harvest: '2026-08-28', weight: 28 },
-    { id: 3, code: 'OX-24-011', coffee: 'Las Nubes', origin: 'Oaxaca, México', variety: 'Bourbon', process: 'Honey', harvest: '2026-10-02', weight: 16.75 },
+    { id: 1, code: 'CH-24-018', coffee: 'Finca La Esperanza', origin: 'Chiapas, México', variety: 'Typica', process: 'Lavado', density: 724, humidity: 11.2, altitude: 1450, harvest: '2026-09-12', weight: 42.5 },
+    { id: 2, code: 'VR-24-006', coffee: 'El Mirador', origin: 'Veracruz, México', variety: 'Caturra', process: 'Natural', density: 690, humidity: 10.8, altitude: 1650, harvest: '2026-08-28', weight: 28 },
+    { id: 3, code: 'OX-24-011', coffee: 'Las Nubes', origin: 'Oaxaca, México', variety: 'Bourbon', process: 'Honey', density: 735, humidity: 11.5, altitude: 1850, harvest: '2026-10-02', weight: 16.75 },
   ],
   profiles: [
     { id: 1, name: 'Balanceado de la casa', description: 'Dulzor y cuerpo equilibrados', initialTemp: 185, finalTemp: 205, duration: 11, level: 'Medio' },
@@ -23,6 +23,6 @@ export const INITIAL_DATA = {
 
 export const MODULES = {
   cafes: { label: 'Cafés', singular: 'café', icon: 'bean', description: 'Orígenes y variedades de café', columns: [['name', 'Nombre'], ['origin', 'Origen'], ['variety', 'Variedad'], ['process', 'Proceso'], ['notes', 'Notas']], fields: [['name', 'Nombre del café', 'text', true], ['origin', 'Origen', 'text', true], ['variety', 'Variedad', 'text', true], ['process', 'Proceso', 'select', true, ['Lavado', 'Natural', 'Honey', 'Anaeróbico']], ['notes', 'Notas de cata', 'text', false]] },
-  lots: { label: 'Lotes', singular: 'lote', icon: 'layers', description: 'Inventario de café verde', columns: [['code', 'Código'], ['coffee', 'Café'], ['origin', 'Origen'], ['process', 'Proceso'], ['weight', 'Disponible (kg)'], ['harvest', 'Cosecha']], fields: [['code', 'Código de lote', 'text', true], ['coffee', 'Café', 'select', true], ['origin', 'Origen', 'text', true], ['variety', 'Variedad', 'text', true], ['process', 'Proceso', 'select', true, ['Lavado', 'Natural', 'Honey', 'Anaeróbico']], ['harvest', 'Fecha de cosecha', 'date', false], ['weight', 'Peso disponible (kg)', 'number', true]] },
+  lots: { label: 'Lotes', singular: 'lote', icon: 'layers', description: 'Inventario de café verde', columns: [['code', 'Código'], ['coffee', 'Café'], ['origin', 'Origen'], ['process', 'Proceso'], ['density', 'Densidad'], ['humidity', 'Humedad'], ['altitude', 'Altitud'], ['weight', 'Disponible (kg)'], ['harvest', 'Cosecha']], fields: [['code', 'Código de lote', 'text', true], ['coffee', 'Café', 'select', true], ['origin', 'Origen', 'text', true], ['variety', 'Variedad', 'text', true], ['process', 'Tipo de proceso', 'select', true, ['Lavado', 'Natural', 'Honey', 'Anaeróbico']], ['density', 'Densidad (g/L)', 'number', true], ['humidity', 'Humedad (%)', 'number', true], ['altitude', 'Altitud (msnm)', 'number', true], ['harvest', 'Fecha de cosecha', 'date', false], ['weight', 'Peso disponible (kg)', 'number', true]] },
   profiles: { label: 'Perfiles de tueste', singular: 'perfil', icon: 'sliders', description: 'Recetas para tus próximos tuestes', columns: [['name', 'Perfil'], ['level', 'Nivel'], ['initialTemp', 'Temp. inicial'], ['finalTemp', 'Temp. final'], ['duration', 'Duración objetivo']], fields: [['name', 'Nombre del perfil', 'text', true], ['description', 'Descripción', 'text', false], ['level', 'Nivel de tueste', 'select', true, ['Claro', 'Medio', 'Oscuro']], ['initialTemp', 'Temperatura inicial (°C)', 'number', true], ['finalTemp', 'Temperatura final (°C)', 'number', true], ['duration', 'Duración objetivo (min)', 'number', true]] },
 };

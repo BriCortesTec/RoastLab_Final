@@ -228,7 +228,7 @@ export default function RoastForm({ data, onSave }) {
   return <section className="panel roast-form">
     <div className="panel-head">
       <div><h3>{phase === 'setup' ? 'Preparar nuevo tueste' : phase === 'recording' ? 'Tueste en curso' : 'Guardar resultado del tueste'}</h3><p>{phase === 'setup' ? 'Completa los datos y comienza a capturar la curva.' : phase === 'recording' ? 'Registra las temperaturas conforme avanza la tanda.' : 'Confirma el peso final y agrega observaciones.'}</p></div>
-      <div className={`roast-timer ${startedAt !== null && phase === 'recording' ? 'roast-timer-active' : ''}`}><Icon name="clock" size={18} /><strong>{formatTime(elapsed)}</strong><span>{phase === 'setup' ? 'LISTO' : phase === 'finishing' ? 'DETENIDO' : startedAt === null ? 'ESPERANDO' : 'EN CURSO'}</span></div>
+      
     </div>
 
     <div className="roast-section">
@@ -246,6 +246,7 @@ export default function RoastForm({ data, onSave }) {
 
     {started && <>
       <div className="roast-section live-temperature-section">
+        <div className={`roast-timer ${startedAt !== null && phase === 'recording' ? 'roast-timer-active' : ''}`}><Icon name="clock" size={18} /><strong>{formatTime(elapsed)}</strong><span>{phase === 'setup' ? 'LISTO' : phase === 'finishing' ? 'DETENIDO' : startedAt === null ? 'ESPERANDO' : 'EN CURSO'}</span></div><br></br>
         <div className="live-section-heading"><span className="form-section-title"><span>2</span> Temperatura en vivo</span><span className="live-indicator"><i /> {startedAt === null ? 'Esperando primera lectura' : phase === 'recording' ? 'Captura activa' : 'Captura pausada'}</span></div>
         <TemperatureChart points={measurements} events={events} elapsed={elapsed} />
         {phase === 'recording' && <form className="temperature-entry" onSubmit={registerTemperature}>
