@@ -1,12 +1,9 @@
-/*Esta entidad almacena la info de cada lote de café: 
-    código,nombre,origen,variedad,proceso y peso disponible
-*/
 package com.roastlab.backend.entity;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;//se utuliza para cantidades decimales como los kg, evitando impreciones de float o double
-import java.time.LocalDate;// representa una fecha sin hora 
-import java.time.LocalDateTime;//representa fecha y hora
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "lotes_cafe")
@@ -20,23 +17,24 @@ public class LoteCafe {
     @Column(name = "codigo_lote", nullable = false, unique = true, length = 40)
     private String codigoLote;
 
-    @Column(name = "nombre_cafe", nullable = false, length = 100)
-    private String nombreCafe;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_cafe", nullable = false)
+    private Cafe cafe;
 
-    @Column(name = "origen", length = 120)
-    private String origen;
+    @Column(name = "densidad", precision = 8, scale = 2)
+    private BigDecimal densidad;
 
-    @Column(name = "variedad", length = 80)
-    private String variedad;
+    @Column(name = "humedad", precision = 5, scale = 2)
+    private BigDecimal humedad;
 
-    @Column(name = "proceso", length = 60)
-    private String proceso;
+    @Column(name = "altitud")
+    private Integer altitud;
 
     @Column(name = "fecha_cosecha")
     private LocalDate fechaCosecha;
 
     @Column(name = "peso_disponible_kg", nullable = false, precision = 10, scale = 2)
-    private BigDecimal pesoDisponibleKg = BigDecimal.ZERO;
+    private BigDecimal pesoDisponibleKg;
 
     @Column(name = "fecha_registro", insertable = false, updatable = false)
     private LocalDateTime fechaRegistro;
@@ -60,36 +58,36 @@ public class LoteCafe {
         this.codigoLote = codigoLote;
     }
 
-    public String getNombreCafe() {
-        return nombreCafe;
+    public Cafe getCafe() {
+        return cafe;
     }
 
-    public void setNombreCafe(String nombreCafe) {
-        this.nombreCafe = nombreCafe;
+    public void setCafe(Cafe cafe) {
+        this.cafe = cafe;
     }
 
-    public String getOrigen() {
-        return origen;
+    public BigDecimal getDensidad() {
+        return densidad;
     }
 
-    public void setOrigen(String origen) {
-        this.origen = origen;
+    public void setDensidad(BigDecimal densidad) {
+        this.densidad = densidad;
     }
 
-    public String getVariedad() {
-        return variedad;
+    public BigDecimal getHumedad() {
+        return humedad;
     }
 
-    public void setVariedad(String variedad) {
-        this.variedad = variedad;
+    public void setHumedad(BigDecimal humedad) {
+        this.humedad = humedad;
     }
 
-    public String getProceso() {
-        return proceso;
+    public Integer getAltitud() {
+        return altitud;
     }
 
-    public void setProceso(String proceso) {
-        this.proceso = proceso;
+    public void setAltitud(Integer altitud) {
+        this.altitud = altitud;
     }
 
     public LocalDate getFechaCosecha() {
