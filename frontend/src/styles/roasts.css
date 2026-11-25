@@ -59,6 +59,251 @@
   resize: vertical;
 }
 
+.roast-timer {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  column-gap: 7px;
+  padding: 8px 11px;
+  border: 1px solid #e9ece5;
+  border-radius: 9px;
+  color: #8c958c;
+}
+
+.roast-timer strong {
+  color: #4d5d50;
+  font-variant-numeric: tabular-nums;
+  font-size: 16px;
+}
+
+.roast-timer span {
+  grid-column: 2;
+  color: #9ba198;
+  font-size: 8px;
+  letter-spacing: .1em;
+}
+
+.roast-timer-active {
+  border-color: #dbe8dc;
+  background: #f3f8f2;
+  color: #4c8153;
+}
+
+.roast-timer-active strong,
+.roast-timer-active span {
+  color: #47744e;
+}
+
+.start-roast-button {
+  margin-top: 17px;
+  font-size: 11px;
+}
+
+.lot-available {
+  align-self: end;
+  padding-bottom: 11px;
+  color: #889187;
+  font-size: 10px;
+}
+
+.lot-available b {
+  color: #55735a;
+}
+
+.live-temperature-section {
+  border-top: 1px solid #e8eee7;
+}
+
+.temperature-chart {
+  margin-top: 5px;
+}
+
+.live-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #5d815f;
+  font-size: 10px;
+}
+
+.live-indicator i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #72a477;
+  box-shadow: 0 0 0 3px #72a47720;
+}
+
+.roast-finish-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 12px 0 0;
+  color: #8a938a;
+  font-size: 10px;
+}
+
+.roast-finish-summary span {
+  display: flex;
+  gap: 6px;
+}
+
+.roast-finish-summary b {
+  color: #526652;
+}
+
+.roast-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #eff0ea;
+}
+
+.roast-actions .button {
+  font-size: 11px;
+}
+
+.roast-event-panel {
+  margin-top: 20px;
+  padding: 14px;
+  border: 1px solid #edf0e9;
+  border-radius: 10px;
+  background: #fbfcfa;
+}
+
+.roast-event-panel h4 {
+  margin: 0 0 4px;
+  color: #354c3a;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 15px;
+}
+
+.roast-event-panel > p {
+  margin: 0 0 12px;
+  color: #899289;
+  font-size: 10px;
+}
+
+.roast-event-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.roast-event-button {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 130px;
+  padding: 9px 11px;
+  border: 1px solid var(--event-border, #e3e9e1);
+  border-radius: 8px;
+  background: var(--event-bg, #fff);
+  color: var(--event-ink, #57705a);
+  text-align: left;
+}
+
+.roast-event-button:hover:not(:disabled) {
+  border-color: var(--event-color, #8da991);
+  filter: saturate(1.08);
+}
+
+.roast-event-button b {
+  font-size: 10px;
+}
+
+.roast-event-button span {
+  color: #919990;
+  font-size: 9px;
+}
+
+.roast-event-button:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+
+.roast-event-dry_end {
+  --event-bg: #fbf5e9;
+  --event-border: #ead9b7;
+  --event-ink: #806943;
+  --event-color: #c5a56d;
+}
+
+.roast-event-fc_start {
+  --event-bg: #fbefeb;
+  --event-border: #e8c9bf;
+  --event-ink: #8b5d50;
+  --event-color: #c88e7d;
+}
+
+.roast-event-sc_start {
+  --event-bg: #f5f0f8;
+  --event-border: #dfd1e8;
+  --event-ink: #765f83;
+  --event-color: #ad91bb;
+}
+
+.roast-event-marked {
+  border-color: var(--event-color, #8da991);
+  box-shadow: inset 0 0 0 1px var(--event-color, #8da991);
+}
+
+.automatic-event-note {
+  margin: 0 0 11px;
+  padding: 8px 10px;
+  border: 1px solid #d7e1ef;
+  border-radius: 7px;
+  background: #f2f6fb;
+  color: #647892;
+  font-size: 10px;
+}
+
+.automatic-event-note b {
+  color: #54739b;
+}
+
+.roast-event-note,
+.drop-help {
+  margin-top: 10px;
+  color: #969d95;
+  font-size: 9px;
+}
+
+.drop-help {
+  align-self: center;
+}
+
+.drop-action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.button-drop {
+  border: 1px solid #d8c6ae;
+  background: #f7f1e8;
+  color: #80674a;
+}
+
+.button-drop:hover:not(:disabled) {
+  border-color: #b89a72;
+  background: #f2e9dc;
+}
+
+.button-drop:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+
 @media (max-width:740px) {
   .form-grid {
     grid-template-columns: 1fr;
@@ -70,5 +315,24 @@
 
   .roast-form {
     padding: 17px;
+  }
+
+  .roast-actions {
+    flex-direction: column-reverse;
+  }
+
+  .drop-action {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .live-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .roast-event-button {
+    flex: 1 1 135px;
   }
 }

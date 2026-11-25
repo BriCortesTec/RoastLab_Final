@@ -133,6 +133,35 @@
   font-size: 11px;
 }
 
+.curve-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #507653;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.curve-link:disabled {
+  color: #b0b6ae;
+  cursor: default;
+}
+
+.curve-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  margin-top: 14px;
+  color: #788378;
+  font-size: 10px;
+}
+
+@media (max-width: 740px) {
+  .history-table {
+    min-width: 940px;
+  }
+}
+
 @media (max-width:740px) {
   .reports-grid {
     grid-template-columns: 1fr;

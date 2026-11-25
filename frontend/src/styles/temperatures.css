@@ -1,0 +1,313 @@
+.temperature-chart {
+  position: relative;
+  min-height: 260px;
+  margin: 4px 0 18px;
+  overflow: hidden;
+  border: 1px solid #edf0e9;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #fff 0%, #fcfdfb 100%);
+}
+
+.temperature-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 260px;
+}
+
+.chart-gridline {
+  stroke: #e9eee7;
+  stroke-width: 1;
+}
+
+.chart-gridline-vertical {
+  stroke-dasharray: 3 5;
+}
+
+.chart-axis-label {
+  fill: #89938a;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+}
+
+.chart-axis-title {
+  fill: #6e7c70;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.temperature-line {
+  fill: none;
+  stroke: #bd8952;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.temperature-point-halo {
+  fill: #fff;
+  stroke: #bd8952;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.temperature-point {
+  fill: #bd8952;
+}
+
+.temperature-point-group {
+  cursor: help;
+}
+
+.temperature-point-group:hover .temperature-point-halo {
+  stroke-width: 3;
+}
+
+.temperature-point-halo.temperature-point-charge { stroke: #7fa487; }
+.temperature-point.temperature-point-charge { fill: #7fa487; }
+.temperature-point-halo.temperature-point-tp { stroke: #7894b9; }
+.temperature-point.temperature-point-tp { fill: #7894b9; }
+.temperature-point-halo.temperature-point-dry_end { stroke: #c1a16b; }
+.temperature-point.temperature-point-dry_end { fill: #c1a16b; }
+.temperature-point-halo.temperature-point-fc_start { stroke: #c18472; }
+.temperature-point.temperature-point-fc_start { fill: #c18472; }
+.temperature-point-halo.temperature-point-sc_start { stroke: #a18aaa; }
+.temperature-point.temperature-point-sc_start { fill: #a18aaa; }
+.temperature-point-halo.temperature-point-drop { stroke: #68796c; }
+.temperature-point.temperature-point-drop { fill: #68796c; }
+
+.chart-event-line {
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+  vector-effect: non-scaling-stroke;
+}
+
+.chart-event-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.chart-event-dot {
+  stroke: #fff;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.chart-event-charge.chart-event-line,
+.chart-event-charge.chart-event-dot {
+  stroke: #5c835f;
+  fill: #5c835f;
+}
+
+.chart-event-charge.chart-event-label {
+  fill: #5c835f;
+}
+
+.chart-event-tp.chart-event-line,
+.chart-event-tp.chart-event-dot {
+  stroke: #6484b0;
+  fill: #6484b0;
+}
+
+.chart-event-tp.chart-event-label {
+  fill: #6484b0;
+}
+
+.chart-event-dry_end.chart-event-line,
+.chart-event-dry_end.chart-event-dot {
+  stroke: #bd8952;
+  fill: #bd8952;
+}
+
+.chart-event-dry_end.chart-event-label {
+  fill: #a7753d;
+}
+
+.chart-event-fc_start.chart-event-line,
+.chart-event-fc_start.chart-event-dot {
+  stroke: #b66d55;
+  fill: #b66d55;
+}
+
+.chart-event-fc_start.chart-event-label {
+  fill: #a45d48;
+}
+
+.chart-event-sc_start.chart-event-line,
+.chart-event-sc_start.chart-event-dot {
+  stroke: #99749a;
+  fill: #99749a;
+}
+
+.chart-event-sc_start.chart-event-label {
+  fill: #876488;
+}
+
+.chart-event-drop.chart-event-line,
+.chart-event-drop.chart-event-dot {
+  stroke: #405047;
+  fill: #405047;
+}
+
+.chart-event-drop.chart-event-label {
+  fill: #405047;
+}
+
+.saved-event-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.saved-event-chip {
+  display: inline-flex;
+  gap: 5px;
+  padding: 6px 8px;
+  border: 1px solid #e8ede6;
+  border-radius: 7px;
+  background: #fff;
+  color: #7c887d;
+  font-size: 9px;
+}
+
+.saved-event-chip b {
+  color: #486b4d;
+}
+
+.saved-event-chip-charge { border-color: #d4e3d5; background: #f3f8f2; }
+.saved-event-chip-charge b { color: #5b8061; }
+.saved-event-chip-tp { border-color: #d5deec; background: #f3f6fb; }
+.saved-event-chip-tp b { color: #6884a8; }
+.saved-event-chip-dry_end { border-color: #e8ddc7; background: #fbf7ef; }
+.saved-event-chip-dry_end b { color: #a08350; }
+.saved-event-chip-fc_start { border-color: #ead6d0; background: #fbf4f1; }
+.saved-event-chip-fc_start b { color: #a56f60; }
+.saved-event-chip-sc_start { border-color: #e2d7e9; background: #f8f4fa; }
+.saved-event-chip-sc_start b { color: #8b7197; }
+.saved-event-chip-drop { border-color: #dce2dc; background: #f5f7f4; }
+.saved-event-chip-drop b { color: #657568; }
+
+.chart-empty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #ffffffdb;
+  color: #929a90;
+  font-size: 11px;
+  text-align: center;
+  transform: translate(-50%, -50%);
+}
+
+.temperature-entry {
+  display: grid;
+  grid-template-columns: minmax(190px, 1fr) auto minmax(150px, auto);
+  align-items: end;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 9px;
+  background: #f7f8f4;
+}
+
+.temperature-entry .button {
+  min-height: 39px;
+  font-size: 11px;
+}
+
+.temperature-readings {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  column-gap: 6px;
+  padding: 0 5px 4px;
+  color: #6e796e;
+  font-size: 10px;
+}
+
+.temperature-readings b {
+  color: #34533c;
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+}
+
+.temperature-readings small {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+  color: #8b9489;
+}
+
+.measurement-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.measurement-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border: 1px solid #e9eee7;
+  border-radius: 8px;
+  background: #fff;
+  color: #849087;
+  font-size: 10px;
+}
+
+.measurement-row b {
+  color: #385940;
+}
+
+.measurement-row small {
+  color: #9aa198;
+}
+
+.curve-modal {
+  width: min(100%, 850px);
+}
+
+.curve-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.curve-modal-header h3 {
+  margin: 5px 0 3px;
+}
+
+.curve-modal-header p {
+  margin: 0;
+  color: #8a938a;
+  font-size: 11px;
+}
+
+@media (max-width: 740px) {
+  .temperature-chart,
+  .temperature-chart svg {
+    min-height: 220px;
+  }
+
+  .temperature-entry {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .temperature-readings {
+    grid-template-columns: auto auto 1fr;
+    align-items: center;
+  }
+
+  .temperature-readings small {
+    grid-column: auto;
+    margin: 0 0 0 auto;
+  }
+}

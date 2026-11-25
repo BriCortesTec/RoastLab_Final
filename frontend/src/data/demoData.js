@@ -15,9 +15,9 @@ export const INITIAL_DATA = {
     { id: 3, name: 'Espresso intenso', description: 'Cuerpo alto y chocolate', initialTemp: 190, finalTemp: 212, duration: 13, level: 'Oscuro' },
   ],
   roasts: [
-    { id: 1, name: 'Tueste matutino #024', date: '2026-11-21', lot: 'CH-24-018 · Finca La Esperanza', profile: 'Balanceado de la casa', duration: 11.2, input: 8, output: 6.72, maxTemp: 205, status: 'Completado' },
-    { id: 2, name: 'Lote de prueba #023', date: '2026-11-20', lot: 'VR-24-006 · El Mirador', profile: 'Claro para filtro', duration: 9.4, input: 5, output: 4.28, maxTemp: 198, status: 'Completado' },
-    { id: 3, name: 'Prueba espresso #022', date: '2026-11-18', lot: 'OX-24-011 · Las Nubes', profile: 'Espresso intenso', duration: 13, input: 6, output: 4.92, maxTemp: 212, status: 'Completado' },
+    { id: 1, name: 'Tueste matutino #024', date: '2026-11-21', lot: 'CH-24-018 · Finca La Esperanza', profile: 'Balanceado de la casa', duration: 11.2, input: 8, output: 6.72, maxTemp: 205, status: 'Completado', measurements: [{ seconds: 0, temperature: 162 }, { seconds: 135, temperature: 176 }, { seconds: 290, temperature: 188 }, { seconds: 462, temperature: 199 }, { seconds: 672, temperature: 205 }] },
+    { id: 2, name: 'Lote de prueba #023', date: '2026-11-20', lot: 'VR-24-006 · El Mirador', profile: 'Claro para filtro', duration: 9.4, input: 5, output: 4.28, maxTemp: 198, status: 'Completado', measurements: [{ seconds: 0, temperature: 158 }, { seconds: 132, temperature: 172 }, { seconds: 281, temperature: 185 }, { seconds: 428, temperature: 193 }, { seconds: 564, temperature: 198 }] },
+    { id: 3, name: 'Prueba espresso #022', date: '2026-11-18', lot: 'OX-24-011 · Las Nubes', profile: 'Espresso intenso', duration: 13, input: 6, output: 4.92, maxTemp: 212, status: 'Completado', measurements: [{ seconds: 0, temperature: 168 }, { seconds: 170, temperature: 182 }, { seconds: 360, temperature: 196 }, { seconds: 570, temperature: 205 }, { seconds: 780, temperature: 212 }] },
   ],
 };
 

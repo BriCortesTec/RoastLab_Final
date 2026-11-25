@@ -18,7 +18,9 @@ Abre la dirección local que muestre Vite, normalmente `http://localhost:5173/`.
 - Inicio de sesión y registro con validación de campos.
 - Paneles de inicio con navegación por rol (administración, gerencia y tostador).
 - Catálogos de cafés, lotes y perfiles con búsqueda, paginación, alta, edición y eliminación.
-- Registro de tuestes, validación de pesos e inventario, historial y reportes.
+- Registro de tuestes con cronómetro, lecturas manuales y curva que se actualiza al agregar cada temperatura.
+- Historial para consultar la curva guardada y reportes básicos.
+- Validación de pesos e inventario; el RoR queda pendiente para una siguiente etapa.
 - Diseño adaptable para pantallas pequeñas.
 - Cliente Axios en `src/services/api.js`, preparado para enviar el JWT.
 
@@ -41,16 +43,31 @@ src/
 │   ├── Sidebar.jsx
 │   ├── Topbar.jsx
 │   ├── CatalogPage.jsx
+│   ├── TemperatureChart.jsx
 │   ├── Icon.jsx
 │   ├── EmptyState.jsx
 │   └── Toast.jsx
 ├── services/api.js         # configuración de Axios y servicios
 ├── data/                   # datos de muestra y navegación/roles
 ├── assets/                 # imágenes
-└── styles/global.css       # estilos generales y diseño adaptable
+└── styles/
+    ├── global.css          # tipografía, colores, botones y reglas compartidas
+    ├── auth.css            # login y registro
+    ├── layout.css          # menú lateral y barra superior
+    ├── dashboard.css       # panel de inicio
+    ├── catalogs.css        # tablas, búsqueda y formularios de catálogo
+    ├── roasts.css          # formulario de registro de tueste
+    ├── temperatures.css    # gráfica y lecturas de temperatura
+    └── reports.css         # historial y reportes
 ```
 
 El recorrido es `main.jsx` → `App.jsx` → la pantalla de `pages` que corresponde. Las pantallas pueden usar componentes compartidos de `components`; por ejemplo, `Cafes.jsx`, `Lots.jsx` y `Profiles.jsx` reutilizan `CatalogPage.jsx` para mostrar sus tablas y formularios.
+
+`main.jsx` importa `global.css`. Cada página o componente importa su hoja de estilos específica; por eso puedes trabajar en `auth.css` para cambiar el login sin buscar esas reglas entre los estilos del dashboard.
+
+## Probar el tueste de demostración
+
+En la aplicación, abre **Registrar tueste**, completa los datos y selecciona **Iniciar tueste**. Escribe una lectura de temperatura y pulsa **Registrar temperatura** cada vez que quieras añadir un punto a la curva. Registra al menos dos lecturas, indica el peso de salida y finaliza el tueste. Luego abre el historial y pulsa **Ver curva**. Todo queda guardado en este navegador; no se necesita una conexión con un termómetro ni con el backend para esta demostración.
 
 ## Datos y backend
 
