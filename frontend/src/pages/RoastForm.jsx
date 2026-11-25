@@ -58,6 +58,21 @@ function makeEvent(type, point) {
   };
 }
 
+function calculateLatestRor(points) {
+  if (points.length < 2) return null;
+  const last = points[points.length - 1];
+  const previous = [...points].reverse().slice(1).find((point) => point.seconds < last.seconds);
+  if (!previous) return null;
+  return Number(((last.temperature - previous.temperature) / ((last.seconds - previous.seconds) / 60)).toFixed(1));
+}
+
+const MACHINE_CONTROLS = [
+  ['heat', 'Calor / quemador'],
+  ['airflow', 'Flujo de aire'],
+  ['drum', 'Velocidad del tambor'],
+  ['other', 'Otro ajuste'],
+];
+
 export default function RoastForm({ data, onSave }) {
   const [form, setForm] = useState(emptyRoast);
   const [startedAt, setStartedAt] = useState(null);
@@ -67,6 +82,9 @@ export default function RoastForm({ data, onSave }) {
   const [readingStartedAt, setReadingStartedAt] = useState(null);
   const [measurements, setMeasurements] = useState([]);
   const [events, setEvents] = useState([]);
+  const [adjustments, setAdjustments] = useState([]);
+  const [adjustmentType, setAdjustmentType] = useState('heat');
+  const [adjustmentValue, setAdjustmentValue] = useState('');
   const [error, setError] = useState('');
   const started = phase !== 'setup';
 
@@ -79,7 +97,9 @@ export default function RoastForm({ data, onSave }) {
   }, [phase, startedAt]);
 
   const selectedLot = data.lots.find((lot) => lot.code === form.lotCode);
+  const selectedProfile = data.profiles.find((profile) => profile.name === form.profile);
   const maximumTemperature = Math.max(0, ...measurements.map((point) => point.temperature));
+  const latestRor = calculateLatestRor(measurements);
 
   const updateField = (event) => {
     setForm({ ...form, [event.target.name]: event.target.value });
@@ -110,6 +130,8 @@ export default function RoastForm({ data, onSave }) {
     if (Number(form.input) > Number(selectedLot.weight)) return setError(`El lote solo tiene ${selectedLot.weight} kg disponibles.`);
     setMeasurements([]);
     setEvents([]);
+    setAdjustments([]);
+    setAdjustmentValue('');
     setElapsed(0);
     setStartedAt(null);
     setReadingStartedAt(null);
@@ -174,6 +196,24 @@ export default function RoastForm({ data, onSave }) {
     saveReading(type);
   };
 
+  const recordAdjustment = () => {
+    if (!events.some((event) => event.type === 'charge') || startedAt === null) return setError('Registra primero la temperatura de carga.');
+    if (!adjustmentValue.trim()) return setError('Anota el nuevo valor del ajuste.');
+    const control = MACHINE_CONTROLS.find(([type]) => type === adjustmentType);
+    const capturedAt = Date.now();
+    setAdjustments((current) => [...current, {
+      id: capturedAt,
+      type: adjustmentType,
+      label: control?.[1] || 'Otro ajuste',
+      value: adjustmentValue.trim(),
+      seconds: Math.max(0, Math.floor((capturedAt - startedAt) / 1000)),
+      temperature: measurements.at(-1)?.temperature ?? null,
+      capturedAt: new Date(capturedAt).toISOString(),
+    }].sort((a, b) => a.seconds - b.seconds));
+    setAdjustmentValue('');
+    setError('');
+  };
+
   const canMarkEvent = (type) => {
     if (events.some((event) => event.type === type)) return false;
     if (type === 'dry_end') return events.some((event) => event.type === 'tp');
@@ -207,6 +247,8 @@ export default function RoastForm({ data, onSave }) {
       observations: form.observations.trim(),
       measurements,
       events,
+      adjustments,
+      profileId: selectedProfile?.id ?? null,
       status: 'Completado',
     };
     onSave(roast);
@@ -222,13 +264,15 @@ export default function RoastForm({ data, onSave }) {
     setReadingStartedAt(null);
     setMeasurements([]);
     setEvents([]);
+    setAdjustments([]);
+    setAdjustmentValue('');
     setError('');
   };
 
   return <section className="panel roast-form">
     <div className="panel-head">
       <div><h3>{phase === 'setup' ? 'Preparar nuevo tueste' : phase === 'recording' ? 'Tueste en curso' : 'Guardar resultado del tueste'}</h3><p>{phase === 'setup' ? 'Completa los datos y comienza a capturar la curva.' : phase === 'recording' ? 'Registra las temperaturas conforme avanza la tanda.' : 'Confirma el peso final y agrega observaciones.'}</p></div>
-      
+      <div className={`roast-timer ${startedAt !== null && phase === 'recording' ? 'roast-timer-active' : ''}`}><Icon name="clock" size={18} /><strong>{formatTime(elapsed)}</strong><span>{phase === 'setup' ? 'LISTO' : phase === 'finishing' ? 'DETENIDO' : startedAt === null ? 'ESPERANDO' : 'EN CURSO'}</span></div>
     </div>
 
     <div className="roast-section">
@@ -237,7 +281,7 @@ export default function RoastForm({ data, onSave }) {
         <label className="field field-wide">Nombre del tueste<input className="input" name="name" value={form.name} onChange={updateField} placeholder="Ej. Tueste de la mañana #025" minLength="3" maxLength="100" disabled={started} required /></label>
         <label className="field">Fecha del tueste<input className="input" type="date" name="date" value={form.date} onChange={updateField} disabled={started} required /></label>
         <label className="field">Lote de café<select className="input" name="lotCode" value={form.lotCode} onChange={updateField} disabled={started} required><option value="">Selecciona un lote…</option>{data.lots.map((lot) => <option key={lot.id} value={lot.code} disabled={Number(lot.weight) <= 0}>{lot.code} · {lot.coffee} ({lot.weight} kg)</option>)}</select></label>
-        <label className="field">Perfil de tueste<select className="input" name="profile" value={form.profile} onChange={updateField} disabled={started}><option value="">Sin perfil</option>{data.profiles.map((profile) => <option key={profile.id} value={profile.name}>{profile.name}</option>)}</select></label>
+        <label className="field">Perfil de tueste<select className="input" name="profile" value={form.profile} onChange={updateField} disabled={started}><option value="">Sin perfil</option>{data.profiles.map((profile) => <option key={profile.id} value={profile.name}>{profile.name}{profile.measurements?.length ? ' · con curva' : ''}</option>)}</select></label>
         <label className="field">Peso de entrada (kg)<input className="input" type="number" name="input" value={form.input} onChange={updateField} min="0.01" step="0.01" placeholder="8.00" disabled={started} required /></label>
         {selectedLot && <span className="lot-available">Disponible en este lote: <b>{selectedLot.weight} kg</b></span>}
       </div>
@@ -246,13 +290,13 @@ export default function RoastForm({ data, onSave }) {
 
     {started && <>
       <div className="roast-section live-temperature-section">
-        <div className={`roast-timer ${startedAt !== null && phase === 'recording' ? 'roast-timer-active' : ''}`}><Icon name="clock" size={18} /><strong>{formatTime(elapsed)}</strong><span>{phase === 'setup' ? 'LISTO' : phase === 'finishing' ? 'DETENIDO' : startedAt === null ? 'ESPERANDO' : 'EN CURSO'}</span></div><br></br>
         <div className="live-section-heading"><span className="form-section-title"><span>2</span> Temperatura en vivo</span><span className="live-indicator"><i /> {startedAt === null ? 'Esperando primera lectura' : phase === 'recording' ? 'Captura activa' : 'Captura pausada'}</span></div>
-        <TemperatureChart points={measurements} events={events} elapsed={elapsed} />
+        <TemperatureChart points={measurements} events={events} elapsed={elapsed} referencePoints={selectedProfile?.measurements || []} referenceLabel={selectedProfile?.name || 'Perfil objetivo'} />
+        {selectedProfile && !selectedProfile.measurements?.length && <div className="profile-reference-note">Este perfil aún no tiene una curva guardada. Puedes crear uno desde un tueste terminado en el historial.</div>}
         {phase === 'recording' && <form className="temperature-entry" onSubmit={registerTemperature}>
           <label className="field">Temperatura actual (°C)<input className="input" type="number" min="0" max="300" step="0.1" value={temperature} onChange={updateTemperature} placeholder="Por ejemplo: 185.5" autoFocus /></label>
           <button className="button button-primary" type="submit" disabled={!temperature}><Icon name="plus" size={17} /> Registrar temperatura</button>
-          <div className="temperature-readings"><b>{measurements.length}</b><span>lecturas</span><small>Máxima: {maximumTemperature ? `${maximumTemperature} °C` : '—'}</small></div>
+          <div className="temperature-readings"><b>{measurements.length}</b><span>lecturas</span><small>Máxima: {maximumTemperature ? `${maximumTemperature} °C` : '—'}</small><small>ROR: {latestRor === null ? '—' : `${latestRor} °C/min`}</small></div>
         </form>}
         {measurements.length > 0 && <div className="measurement-list">{measurements.map((point, index) => <div className={`measurement-row ${point.eventType ? `measurement-row-${point.eventType}` : ''}`} key={`${point.seconds}-${index}`}><span>{point.eventType ? ROAST_EVENTS.find((event) => event.type === point.eventType)?.label : `Lectura ${index + 1}`}</span><b>{point.temperature} °C</b><small>{formatTime(point.seconds)}</small></div>)}</div>}
         {phase === 'recording' && events.some((event) => event.type === 'charge') && <div className="roast-event-panel"><h4>Hitos del tueste</h4><p>Cada botón guarda la temperatura escrita y el momento en que empezaste a anotarla.</p><div className="automatic-event-note">{events.some((event) => event.type === 'tp') ? <>Punto de inflexión detectado: <b>{formatTime(events.find((event) => event.type === 'tp').seconds)} · {events.find((event) => event.type === 'tp').temperature} °C</b></> : 'El sistema marcará el punto de inflexión cuando confirme que la temperatura comenzó a subir.'}</div><div className="roast-event-buttons">{ROAST_EVENTS.filter((event) => !['charge', 'tp', 'drop'].includes(event.type)).map((event) => {
@@ -263,6 +307,11 @@ export default function RoastForm({ data, onSave }) {
           </button>;
         })}</div><div className="roast-event-note">El segundo crack es opcional; regístralo solo si ocurre.</div></div>}
         {events.length > 0 && <div className="saved-event-list">{events.map((event) => <span className={`saved-event-chip saved-event-chip-${event.type}`} key={event.type}><b>{event.short || event.type.toUpperCase()}</b> {formatTime(event.seconds)}{event.temperature !== null ? ` · ${event.temperature} °C` : ''}</span>)}</div>}
+        {phase === 'recording' && events.some((event) => event.type === 'charge') && <section className="machine-adjustment-panel"><div><h4>Ajustes de la máquina</h4><p>Haz el cambio en la tostadora y anótalo aquí para guardar el momento y el valor aplicado.</p></div>
+          {selectedProfile?.adjustments?.length > 0 && <div className="profile-adjustment-reference"><b>Ajustes de este perfil</b>{selectedProfile.adjustments.map((adjustment) => <span key={adjustment.id || `${adjustment.seconds}-${adjustment.type}`}>{formatTime(adjustment.seconds)} · {adjustment.label}: {adjustment.value}</span>)}</div>}
+          <div className="machine-adjustment-entry"><label className="field">Control<select className="input" value={adjustmentType} onChange={(event) => setAdjustmentType(event.target.value)}>{MACHINE_CONTROLS.map(([type, label]) => <option key={type} value={type}>{label}</option>)}</select></label><label className="field">Nuevo valor<input className="input" value={adjustmentValue} onChange={(event) => setAdjustmentValue(event.target.value)} placeholder="Ej. 65 %, nivel 3, 52 rpm" /></label><button className="button button-outline" type="button" onClick={recordAdjustment}>Registrar ajuste</button></div>
+          {adjustments.length > 0 ? <div className="machine-adjustment-list">{adjustments.map((adjustment) => <div key={adjustment.id}><b>{formatTime(adjustment.seconds)}</b><span>{adjustment.label}: {adjustment.value}</span>{adjustment.temperature !== null && <small>{adjustment.temperature} °C</small>}</div>)}</div> : <span className="adjustment-empty">Aún no se registran cambios de máquina.</span>}
+        </section>}
         {error && phase === 'recording' && <div className="error-note" role="alert">{error}</div>}
       </div>
 
@@ -276,6 +325,7 @@ export default function RoastForm({ data, onSave }) {
             <label className="field field-wide">Observaciones<textarea className="input textarea" name="observations" value={form.observations} onChange={updateField} rows="3" maxLength="500" placeholder="Aroma, color, notas del proceso…" /></label>
           </div>
           <div className="roast-finish-summary"><span>Duración <b>{(elapsed / 60).toFixed(1)} min</b></span><span>Lecturas <b>{measurements.length}</b></span><span>Temperatura máxima <b>{maximumTemperature || '—'}{maximumTemperature ? ' °C' : ''}</b></span></div>
+          {adjustments.length > 0 && <div className="machine-adjustment-list machine-adjustment-readonly"><b>Ajustes registrados</b>{adjustments.map((adjustment) => <div key={adjustment.id}><b>{formatTime(adjustment.seconds)}</b><span>{adjustment.label}: {adjustment.value}</span></div>)}</div>}
         </div>
         {error && <div className="error-note" role="alert">{error}</div>}
         <div className="roast-actions"><button className="button button-outline" type="button" onClick={discardRoast}>Descartar tueste</button><button className="button button-primary" type="button" onClick={finishRoast}><Icon name="check" size={17} /> Confirmar guardado</button></div>

@@ -156,6 +156,10 @@
   font-size: 10px;
 }
 
+.profile-save-overlay {
+  z-index: 100;
+}
+
 @media (max-width: 740px) {
   .history-table {
     min-width: 940px;

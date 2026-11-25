@@ -2,10 +2,10 @@ import '../styles/temperatures.css';
 
 const CHART = { width: 800, height: 320, left: 58, right: 20, top: 22, bottom: 44 };
 
-export default function TemperatureChart({ points = [], events = [], elapsed = 0, emptyLabel = 'Registra una temperatura para iniciar la curva.' }) {
+export default function TemperatureChart({ points = [], events = [], elapsed = 0, referencePoints = [], referenceLabel = 'Perfil objetivo', emptyLabel = 'Registra una temperatura para iniciar la curva.' }) {
   const plotWidth = CHART.width - CHART.left - CHART.right;
   const plotHeight = CHART.height - CHART.top - CHART.bottom;
-  const lastSecond = Math.max(points.at(-1)?.seconds || 0, ...events.map((event) => event.seconds || 0));
+  const lastSecond = Math.max(points.at(-1)?.seconds || 0, referencePoints.at(-1)?.seconds || 0, ...events.map((event) => event.seconds || 0));
   const maxSeconds = Math.max(15 * 60, Math.ceil(Math.max(elapsed, lastSecond) / 300) * 300);
   const x = (seconds) => CHART.left + (seconds / maxSeconds) * plotWidth;
   const y = (temperature) => CHART.top + ((250 - temperature) / 150) * plotHeight;
@@ -13,6 +13,7 @@ export default function TemperatureChart({ points = [], events = [], elapsed = 0
   const minuteStep = maxSeconds > 1800 ? 10 : 3;
   const timeTicks = Array.from({ length: Math.floor(maxSeconds / (minuteStep * 60)) + 1 }, (_, i) => i * minuteStep * 60);
   const line = points.map((point) => `${x(point.seconds)},${y(point.temperature)}`).join(' ');
+  const referenceLine = referencePoints.map((point) => `${x(point.seconds)},${y(point.temperature)}`).join(' ');
 
   return <div className="temperature-chart" role="img" aria-label="Curva de temperatura del tueste">
     <svg viewBox={`0 0 ${CHART.width} ${CHART.height}`} preserveAspectRatio="none">
@@ -26,6 +27,7 @@ export default function TemperatureChart({ points = [], events = [], elapsed = 0
       </g>)}
       <text className="chart-axis-title" x={15} y={CHART.height / 2} textAnchor="middle" transform={`rotate(-90 15 ${CHART.height / 2})`}>Temperatura °C</text>
       <text className="chart-axis-title" x={CHART.width / 2} y={CHART.height - 1} textAnchor="middle">Tiempo transcurrido</text>
+      {referencePoints.length > 1 && <polyline className="profile-reference-line" points={referenceLine} />}
       {points.length > 1 && <polyline className="temperature-line" points={line} />}
       {points.map((point, index) => {
         // También reconoce tuestes guardados antes de que las lecturas incluyeran eventType.
@@ -50,6 +52,7 @@ export default function TemperatureChart({ points = [], events = [], elapsed = 0
         </g>;
       })}
     </svg>
+    {referencePoints.length > 0 && <div className="temperature-chart-legend"><span><i className="legend-profile" />{referenceLabel}</span><span><i className="legend-current" />Tueste actual</span></div>}
     {points.length === 0 && <div className="chart-empty">{emptyLabel}</div>}
   </div>;
 }

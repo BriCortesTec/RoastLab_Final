@@ -92,6 +92,19 @@
   color: #987e49;
 }
 
+.curve-status {
+  padding: 4px 7px;
+  border-radius: 12px;
+  background: #f3f4f1;
+  color: #808a80;
+  font-size: 9px;
+}
+
+.curve-status-ready {
+  background: #edf5ed;
+  color: #557d5b;
+}
+
 .table-footer {
   display: flex;
   align-items: center;
