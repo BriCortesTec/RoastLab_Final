@@ -34,6 +34,7 @@ export default function HistoryReports({ data, page, onSaveProfile }) {
       description: String(form.get('description') || '').trim(),
       level: String(form.get('level') || 'Medio'),
       flavorNotes: String(form.get('flavorNotes') || '').trim(),
+      demo: Boolean(profileSource.demo),
       initialTemp: measurements[0]?.temperature ?? 0,
       finalTemp: measurements.at(-1)?.temperature ?? 0,
       duration: profileSource.duration,

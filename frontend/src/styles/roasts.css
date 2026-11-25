@@ -281,6 +281,59 @@
   font-size: 10px;
 }
 
+.profile-action-alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 12px;
+  border: 1px solid #dce6dc;
+  border-radius: 8px;
+  background: #f4f8f3;
+  color: #617565;
+}
+
+.profile-action-alert > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.profile-action-alert small {
+  color: #829084;
+  font-size: 9px;
+}
+
+.profile-action-alert strong {
+  color: #385b41;
+  font-size: 12px;
+}
+
+.profile-action-alert span {
+  color: #879288;
+  font-size: 9px;
+}
+
+.profile-action-due {
+  border-color: #d7c99f;
+  background: #fbf7eb;
+}
+
+.profile-action-due strong {
+  color: #806a3f;
+}
+
+.profile-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  justify-content: flex-end;
+}
+
+.profile-action-buttons .button {
+  min-height: 34px;
+  font-size: 9px;
+}
+
 .machine-adjustment-panel {
   display: grid;
   gap: 12px;
@@ -430,6 +483,15 @@
     align-items: flex-start;
     flex-direction: column;
     gap: 0;
+  }
+
+  .profile-action-alert {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .profile-action-buttons {
+    justify-content: stretch;
   }
 
   .roast-event-button {

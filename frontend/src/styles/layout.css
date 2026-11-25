@@ -281,6 +281,21 @@
   font-size: 11px;
 }
 
+.demo-banner > span:nth-child(2) {
+  flex: 1;
+}
+
+.demo-banner button {
+  padding: 5px 8px;
+  border: 1px solid #e4d5b8;
+  border-radius: 6px;
+  background: #fffdf8;
+  color: #806b43;
+  font-size: 9px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .mobile-menu,
 .mobile-backdrop {
   display: none;

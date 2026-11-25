@@ -1,3 +1,30 @@
+const demoRoasts = [
+  {
+    id: 1, name: 'Tueste balanceado de ejemplo', date: '2026-11-21', lot: 'CH-24-018 · Finca La Esperanza', lotCode: 'CH-24-018', profile: 'Balanceado de la casa', duration: 9, input: 8, output: 6.72, maxTemp: 207, status: 'Completado', demo: true, observations: 'Notas de catación de ejemplo: cacao y caramelo.',
+    measurements: [{ seconds: 0, temperature: 180, eventType: 'charge' }, { seconds: 45, temperature: 151 }, { seconds: 75, temperature: 136 }, { seconds: 90, temperature: 132, eventType: 'tp' }, { seconds: 120, temperature: 138 }, { seconds: 180, temperature: 148, eventType: 'dry_end' }, { seconds: 240, temperature: 163 }, { seconds: 300, temperature: 178 }, { seconds: 360, temperature: 190 }, { seconds: 420, temperature: 197, eventType: 'fc_start' }, { seconds: 480, temperature: 202 }, { seconds: 540, temperature: 207, eventType: 'drop' }],
+    events: [{ type: 'charge', short: 'CARGA', label: 'Carga', seconds: 0, temperature: 180 }, { type: 'tp', short: 'TP', label: 'Punto de inflexión', seconds: 90, temperature: 132 }, { type: 'dry_end', short: 'FIN SECADO', label: 'Fin del secado', seconds: 180, temperature: 148 }, { type: 'fc_start', short: 'PRIMER CRACK', label: 'Inicio del primer crack', seconds: 420, temperature: 197 }, { type: 'drop', short: 'CAÍDA', label: 'Caída / descarga', seconds: 540, temperature: 207 }],
+    adjustments: [{ id: 'demo-1-heat', type: 'heat', label: 'Calor / quemador', value: '65 %', seconds: 180, temperature: 148 }, { id: 'demo-1-air', type: 'airflow', label: 'Flujo de aire', value: '45 %', seconds: 300, temperature: 178 }],
+  },
+  {
+    id: 2, name: 'Tueste claro de ejemplo', date: '2026-11-20', lot: 'VR-24-006 · El Mirador', lotCode: 'VR-24-006', profile: 'Claro para filtro', duration: 8.5, input: 5, output: 4.28, maxTemp: 204, status: 'Completado', demo: true, observations: 'Notas de catación de ejemplo: frutos y flores.',
+    measurements: [{ seconds: 0, temperature: 182, eventType: 'charge' }, { seconds: 45, temperature: 150 }, { seconds: 75, temperature: 134 }, { seconds: 90, temperature: 130, eventType: 'tp' }, { seconds: 120, temperature: 137 }, { seconds: 180, temperature: 148, eventType: 'dry_end' }, { seconds: 240, temperature: 161 }, { seconds: 300, temperature: 175 }, { seconds: 360, temperature: 188 }, { seconds: 390, temperature: 194, eventType: 'fc_start' }, { seconds: 450, temperature: 200 }, { seconds: 510, temperature: 204, eventType: 'drop' }],
+    events: [{ type: 'charge', short: 'CARGA', label: 'Carga', seconds: 0, temperature: 182 }, { type: 'tp', short: 'TP', label: 'Punto de inflexión', seconds: 90, temperature: 130 }, { type: 'dry_end', short: 'FIN SECADO', label: 'Fin del secado', seconds: 180, temperature: 148 }, { type: 'fc_start', short: 'PRIMER CRACK', label: 'Inicio del primer crack', seconds: 390, temperature: 194 }, { type: 'drop', short: 'CAÍDA', label: 'Caída / descarga', seconds: 510, temperature: 204 }],
+    adjustments: [{ id: 'demo-2-heat', type: 'heat', label: 'Calor / quemador', value: '60 %', seconds: 180, temperature: 148 }, { id: 'demo-2-air', type: 'airflow', label: 'Flujo de aire', value: '55 %', seconds: 300, temperature: 175 }],
+  },
+  {
+    id: 3, name: 'Tueste intenso de ejemplo', date: '2026-11-18', lot: 'OX-24-011 · Las Nubes', lotCode: 'OX-24-011', profile: 'Espresso intenso', duration: 10, input: 6, output: 4.92, maxTemp: 216, status: 'Completado', demo: true, observations: 'Notas de catación de ejemplo: chocolate y cuerpo.',
+    measurements: [{ seconds: 0, temperature: 190, eventType: 'charge' }, { seconds: 45, temperature: 160 }, { seconds: 75, temperature: 145 }, { seconds: 90, temperature: 142, eventType: 'tp' }, { seconds: 120, temperature: 147 }, { seconds: 180, temperature: 155, eventType: 'dry_end' }, { seconds: 240, temperature: 169 }, { seconds: 300, temperature: 183 }, { seconds: 360, temperature: 194 }, { seconds: 420, temperature: 200, eventType: 'fc_start' }, { seconds: 480, temperature: 206 }, { seconds: 540, temperature: 211 }, { seconds: 600, temperature: 216, eventType: 'drop' }],
+    events: [{ type: 'charge', short: 'CARGA', label: 'Carga', seconds: 0, temperature: 190 }, { type: 'tp', short: 'TP', label: 'Punto de inflexión', seconds: 90, temperature: 142 }, { type: 'dry_end', short: 'FIN SECADO', label: 'Fin del secado', seconds: 180, temperature: 155 }, { type: 'fc_start', short: 'PRIMER CRACK', label: 'Inicio del primer crack', seconds: 420, temperature: 200 }, { type: 'drop', short: 'CAÍDA', label: 'Caída / descarga', seconds: 600, temperature: 216 }],
+    adjustments: [{ id: 'demo-3-heat', type: 'heat', label: 'Calor / quemador', value: '70 %', seconds: 180, temperature: 155 }, { id: 'demo-3-air', type: 'airflow', label: 'Flujo de aire', value: '50 %', seconds: 360, temperature: 194 }],
+  },
+];
+
+const demoProfiles = [
+  { id: 1, name: 'Balanceado de la casa', description: 'Ejemplo de perfil para comparar curvas', flavorNotes: 'Notas de ejemplo: cacao y caramelo', initialTemp: 180, finalTemp: 207, duration: 9, level: 'Medio', demo: true, sourceRoastId: 1, measurements: demoRoasts[0].measurements, events: demoRoasts[0].events, adjustments: demoRoasts[0].adjustments },
+  { id: 2, name: 'Claro para filtro', description: 'Ejemplo de perfil para comparar curvas', flavorNotes: 'Notas de ejemplo: frutos y flores', initialTemp: 182, finalTemp: 204, duration: 8.5, level: 'Claro', demo: true, sourceRoastId: 2, measurements: demoRoasts[1].measurements, events: demoRoasts[1].events, adjustments: demoRoasts[1].adjustments },
+  { id: 3, name: 'Espresso intenso', description: 'Ejemplo de perfil para comparar curvas', flavorNotes: 'Notas de ejemplo: chocolate y cuerpo', initialTemp: 190, finalTemp: 216, duration: 10, level: 'Oscuro', demo: true, sourceRoastId: 3, measurements: demoRoasts[2].measurements, events: demoRoasts[2].events, adjustments: demoRoasts[2].adjustments },
+];
+
 export const INITIAL_DATA = {
   cafes: [
     { id: 1, name: 'Finca La Esperanza', origin: 'Chiapas, México', variety: 'Typica', process: 'Lavado', notes: 'Cítrico, cacao y piloncillo' },
@@ -9,16 +36,8 @@ export const INITIAL_DATA = {
     { id: 2, code: 'VR-24-006', coffee: 'El Mirador', origin: 'Veracruz, México', variety: 'Caturra', process: 'Natural', density: 690, humidity: 10.8, altitude: 1650, harvest: '2026-08-28', weight: 28 },
     { id: 3, code: 'OX-24-011', coffee: 'Las Nubes', origin: 'Oaxaca, México', variety: 'Bourbon', process: 'Honey', density: 735, humidity: 11.5, altitude: 1850, harvest: '2026-10-02', weight: 16.75 },
   ],
-  profiles: [
-    { id: 1, name: 'Balanceado de la casa', description: 'Dulzor y cuerpo equilibrados', flavorNotes: 'Cítrico, cacao y piloncillo', initialTemp: 162, finalTemp: 205, duration: 11.2, level: 'Medio', measurements: [{ seconds: 0, temperature: 162 }, { seconds: 135, temperature: 176 }, { seconds: 290, temperature: 188 }, { seconds: 462, temperature: 199 }, { seconds: 672, temperature: 205 }], events: [], adjustments: [] },
-    { id: 2, name: 'Claro para filtro', description: 'Acidez brillante y notas florales', flavorNotes: 'Frutos rojos y chocolate', initialTemp: 158, finalTemp: 198, duration: 9.4, level: 'Claro', measurements: [{ seconds: 0, temperature: 158 }, { seconds: 132, temperature: 172 }, { seconds: 281, temperature: 185 }, { seconds: 428, temperature: 193 }, { seconds: 564, temperature: 198 }], events: [], adjustments: [] },
-    { id: 3, name: 'Espresso intenso', description: 'Cuerpo alto y chocolate', flavorNotes: 'Chocolate, cuerpo alto', initialTemp: 168, finalTemp: 212, duration: 13, level: 'Oscuro', measurements: [{ seconds: 0, temperature: 168 }, { seconds: 170, temperature: 182 }, { seconds: 360, temperature: 196 }, { seconds: 570, temperature: 205 }, { seconds: 780, temperature: 212 }], events: [], adjustments: [] },
-  ],
-  roasts: [
-    { id: 1, name: 'Tueste matutino #024', date: '2026-11-21', lot: 'CH-24-018 · Finca La Esperanza', profile: 'Balanceado de la casa', duration: 11.2, input: 8, output: 6.72, maxTemp: 205, status: 'Completado', measurements: [{ seconds: 0, temperature: 162 }, { seconds: 135, temperature: 176 }, { seconds: 290, temperature: 188 }, { seconds: 462, temperature: 199 }, { seconds: 672, temperature: 205 }] },
-    { id: 2, name: 'Lote de prueba #023', date: '2026-11-20', lot: 'VR-24-006 · El Mirador', profile: 'Claro para filtro', duration: 9.4, input: 5, output: 4.28, maxTemp: 198, status: 'Completado', measurements: [{ seconds: 0, temperature: 158 }, { seconds: 132, temperature: 172 }, { seconds: 281, temperature: 185 }, { seconds: 428, temperature: 193 }, { seconds: 564, temperature: 198 }] },
-    { id: 3, name: 'Prueba espresso #022', date: '2026-11-18', lot: 'OX-24-011 · Las Nubes', profile: 'Espresso intenso', duration: 13, input: 6, output: 4.92, maxTemp: 212, status: 'Completado', measurements: [{ seconds: 0, temperature: 168 }, { seconds: 170, temperature: 182 }, { seconds: 360, temperature: 196 }, { seconds: 570, temperature: 205 }, { seconds: 780, temperature: 212 }] },
-  ],
+  profiles: demoProfiles,
+  roasts: demoRoasts,
 };
 
 export const MODULES = {

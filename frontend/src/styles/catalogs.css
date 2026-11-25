@@ -105,6 +105,46 @@
   color: #557d5b;
 }
 
+.curve-status-demo {
+  background: #fbf4e7;
+  color: #927548;
+}
+
+.profile-demo-note {
+  margin: -3px 0 15px;
+  padding: 9px 11px;
+  border: 1px solid #eee6d7;
+  border-radius: 7px;
+  background: #fbf8f0;
+  color: #86734f;
+  font-size: 10px;
+}
+
+.row-actions .view-curve-action {
+  color: #64826a;
+}
+
+.row-actions .view-curve-action:disabled {
+  color: #adb5ad;
+  cursor: not-allowed;
+}
+
+.profile-flavor-notes {
+  display: grid;
+  gap: 4px;
+  margin-top: 12px;
+  padding: 11px;
+  border: 1px solid #edf0e9;
+  border-radius: 8px;
+  background: #fafbf9;
+  color: #778277;
+  font-size: 10px;
+}
+
+.profile-flavor-notes b {
+  color: #4f6853;
+}
+
 .table-footer {
   display: flex;
   align-items: center;

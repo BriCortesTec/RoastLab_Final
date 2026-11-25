@@ -41,6 +41,15 @@ export default function App() {
     localStorage.setItem('roastlab_data', JSON.stringify(updatedData));
   };
 
+  const restoreDemoData = () => {
+    if (!window.confirm('Esto reemplazará los datos guardados en este navegador por los ejemplos de RoastLab. ¿Continuar?')) return;
+    const demoData = JSON.parse(JSON.stringify(INITIAL_DATA));
+    saveData(demoData);
+    setPage('dashboard');
+    setMobileMenuOpen(false);
+    notify('Datos de demostración restaurados.');
+  };
+
   const signIn = (newUser) => {
     setUser(newUser);
     sessionStorage.setItem('roastlab_user', JSON.stringify(newUser));
@@ -99,7 +108,7 @@ export default function App() {
           <div><span className="eyebrow">ROASTLAB · {(ROLE_NAMES[user.role] || ROLE_NAMES.tostador).toUpperCase()}</span><h1>{pageTitle}</h1></div>
           {activePage === 'dashboard' && <div className="today-chip"><span>☀</span> {new Intl.DateTimeFormat('es-MX', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())}</div>}
         </div>
-        <div className="demo-banner"><span>ℹ</span> Los catálogos de esta versión guardan cambios en este navegador; requieren endpoints backend para guardar en MySQL.</div>
+        <div className="demo-banner"><span>ℹ</span><span>Los catálogos de esta versión guardan cambios en este navegador; requieren endpoints backend para guardar en MySQL.</span>{demoMode&&<button type="button" onClick={restoreDemoData}>Restaurar datos demo</button>}</div>
         {pageContent}
       </div>
     </main>
