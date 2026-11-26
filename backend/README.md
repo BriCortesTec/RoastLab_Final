@@ -156,9 +156,9 @@ Las tablas se crean **solo con Flyway** (`backend/src/main/resources/db/migratio
 | V1–V4 | Esquema base, mediciones, normalización de cafés/lotes, perfiles y ajustes |
 | V5 | Roles del sistema (`tostador`, `gerencia`, `administración`) |
 | V6 | Teléfono de usuario, tokens revocados (logout), recuperación de contraseña y bitácora de notificaciones |
-| V7 | Datos de prueba: 12 usuarios, 12 cafés, 12 lotes, 12 perfiles, 12 tuestes con curvas y 15 relaciones tueste–lote |
+| Datos de muestra | `database/RoastLab_schema.sql` (se ejecuta manualmente; no es una migración Flyway) |
 
-Script de respaldo completo: [`database/RoastLab_backup.sql`](database/RoastLab_backup.sql).
+El archivo [`database/RoastLab_schema.sql`](../database/RoastLab_schema.sql) contiene el esquema y datos de muestra. No es un respaldo generado desde una instancia de producción. Las migraciones Flyway instaladas actualmente son V1 a V6; los datos de muestra del SQL no se cargan automáticamente con Flyway.
 
 ## Instalación local
 
@@ -215,7 +215,7 @@ Cada envío queda registrado en la tabla `notificaciones` (consultable por el ad
 
 ## Pruebas de API con Bruno
 
-Abre la carpeta [`bruno/RoastLab`](bruno/RoastLab) en Bruno y elige el entorno `local` o `produccion`. Ejecuta primero `01-auth` (los logins guardan los tokens JWT). Incluye login y obtención del token, uso del token en peticiones protegidas, y casos de error a propósito: credenciales incorrectas (401), datos inválidos (400), acceso denegado por rol (403) y recurso inexistente (404).
+Abre la carpeta [`backend/bruno/RoastLab`](bruno/RoastLab) en Bruno y elige el entorno `local` o `produccion`. Ejecuta primero `01-auth` (los logins guardan los tokens JWT). La colección incluye solicitudes de autenticación, peticiones protegidas y casos de error. Está preparada, pero ejecutar las solicitudes y documentar sus resultados sigue pendiente.
 
 ## Despliegue
 

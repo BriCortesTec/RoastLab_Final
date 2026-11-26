@@ -1,9 +1,51 @@
+import { useEffect, useState } from 'react';
 import Icon from '../components/Icon.jsx';
 import EmptyState from '../components/EmptyState.jsx';
+import { reportService, resourceService } from '../services/api.js';
 import '../styles/dashboard.css';
+
+const API_MODE = Boolean(import.meta.env.VITE_API_URL);
+
 export default function Dashboard({ user, data, navigate }) {
-  const completed = data.roasts.filter((item) => item.status === 'Completado').length;
-  const totalStock = data.lots.reduce((sum, item) => sum + Number(item.weight || 0), 0);
+  const [remoteData, setRemoteData] = useState(null);
+  const [remoteError, setRemoteError] = useState('');
+
+  useEffect(() => {
+    if (!API_MODE) return undefined;
+    let active = true;
+    Promise.all([
+      reportService.summary(),
+      resourceService.list('lotes', { page: 0, size: 50 }),
+      resourceService.list('perfiles', { page: 0, size: 50 }),
+      resourceService.list('cafes', { page: 0, size: 50 }),
+      resourceService.list('tuestes', { page: 0, size: 4 }),
+    ]).then(([summary, lots, profiles, cafes, roasts]) => {
+      if (!active) return;
+      const recentRoasts = (roasts.content || []).map((roast) => ({
+        ...roast,
+        date: String(roast.date || '').slice(0, 10),
+        lot: roast.lotCode ? `${roast.lotCode} · ${roast.lot || ''}` : roast.lot || '—',
+      }));
+      setRemoteData({
+        summary,
+        lots: lots.content || [],
+        profiles: profiles.content || [],
+        cafes: cafes.content || [],
+        roasts: recentRoasts,
+      });
+    }).catch((error) => {
+      if (active) setRemoteError(error.message);
+    });
+    return () => { active = false; };
+  }, []);
+
+  const dashboardData = API_MODE ? remoteData : data;
+  const completed = dashboardData
+    ? (API_MODE ? Number(dashboardData.summary.totalRoasts || 0) : dashboardData.roasts.filter((item) => item.status === 'Completado').length)
+    : '…';
+  const totalStock = dashboardData
+    ? dashboardData.lots.reduce((sum, item) => sum + Number(item.weight || 0), 0)
+    : 0;
   const quick = [
     {
       label: 'Registrar tueste',
@@ -52,6 +94,8 @@ export default function Dashboard({ user, data, navigate }) {
         </div>
       </section>
 
+      {remoteError && <div className="error-note" role="alert">No se pudo cargar el resumen desde la API: {remoteError}</div>}
+
       <div className="stat-grid">
         <StatCard
           label="Tueste registrados"
@@ -61,19 +105,19 @@ export default function Dashboard({ user, data, navigate }) {
         />
         <StatCard
           label="Café disponible"
-          value={`${totalStock.toFixed(1)} kg`}
-          change={`${data.lots.length} lotes activos`}
+          value={dashboardData ? `${totalStock.toFixed(1)} kg` : '…'}
+          change={`${dashboardData?.lots.length ?? '…'} lotes activos`}
           icon="layers"
         />
         <StatCard
           label="Perfiles guardados"
-          value={data.profiles.length}
+          value={dashboardData?.profiles.length ?? '…'}
           change="Listos para usar"
           icon="sliders"
         />
         <StatCard
           label="Cafés de origen"
-          value={data.cafes.length}
+          value={dashboardData?.cafes.length ?? '…'}
           change="En tu catálogo"
           icon="bean"
         />
@@ -92,7 +136,7 @@ export default function Dashboard({ user, data, navigate }) {
           </div>
 
           <div className="recent-list">
-            {data.roasts.slice(0, 4).map((item, index) => (
+            {(dashboardData?.roasts || []).slice(0, 4).map((item, index) => (
               <div className="recent-row" key={item.id}>
                 <span className={`recent-icon roast-color-${index % 3}`}>
                   <Icon name="flame" size={18} />
@@ -107,7 +151,7 @@ export default function Dashboard({ user, data, navigate }) {
                 <span className="status status-done">{item.status}</span>
               </div>
             ))}
-            {data.roasts.length === 0 && (
+            {dashboardData && dashboardData.roasts.length === 0 && (
               <EmptyState
                 title="Sin tuestes todavía"
                 detail="Tu primer registro aparecerá aquí."

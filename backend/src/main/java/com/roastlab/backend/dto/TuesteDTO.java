@@ -1,6 +1,7 @@
 package com.roastlab.backend.dto;
 
 import jakarta.validation.constraints.*;
+import jakarta.validation.Valid;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,7 +22,7 @@ public record TuesteDTO(
     @DecimalMin(value = "0.0", message = "Temperatura inválida.") @DecimalMax(value = "400.0", message = "Temperatura fuera de rango.") BigDecimal maxTemp,
     @Size(max = 30, message = "Máximo 30 caracteres.") String status,
     String observations,
-    List<TuesteLoteDTO> lots,
+    List<@Valid TuesteLoteDTO> lots,
     List<MedicionTuesteDTO> measurements,
     List<EventoDTO> events,
     List<AjusteTuesteDTO> adjustments

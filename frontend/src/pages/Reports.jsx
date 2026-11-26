@@ -1,5 +1,5 @@
 import HistoryReports from './HistoryReports.jsx';
 
-export default function Reports({ data }) {
-  return <HistoryReports data={data} page="reports" />;
+export default function Reports({ data, notify }) {
+  return <HistoryReports data={data} page="reports" notify={notify} />;
 }

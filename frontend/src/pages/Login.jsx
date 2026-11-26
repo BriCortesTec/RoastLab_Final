@@ -35,6 +35,9 @@ export default function Login({ onLogin }) {
     if (form.password.length < 8) {
       return setError('La contraseña debe tener al menos 8 caracteres.');
     }
+    if (mode === 'register' && !/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(form.password)) {
+      return setError('Usa al menos 8 caracteres, una mayúscula, un número y un carácter especial.');
+    }
     if (mode === 'register' && (!form.name.trim() || !form.surname.trim())) {
       return setError('Completa tu nombre y apellido.');
     }
@@ -53,13 +56,13 @@ export default function Login({ onLogin }) {
         const data =
           mode === 'register'
             ? await authService.register({
-                nombre: form.name,
-                apellido: form.surname,
-                correo: form.email,
+                name: form.name,
+                surname: form.surname,
+                email: form.email,
                 password: form.password
               })
             : await authService.login({
-                correo: form.email,
+                email: form.email,
                 password: form.password
               });
 
@@ -194,7 +197,7 @@ export default function Login({ onLogin }) {
                 autoComplete={
                   mode === 'login' ? 'current-password' : 'new-password'
                 }
-                placeholder="Mínimo 8 caracteres"
+                placeholder={mode === 'register' ? '8+ caracteres, mayúscula, número y símbolo' : 'Tu contraseña'}
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 required

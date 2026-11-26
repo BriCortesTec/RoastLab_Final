@@ -14,6 +14,7 @@ api.interceptors.request.use((config) => {
 });
 
 api.interceptors.response.use((response) => response, (error) => {
+  if (axios.isCancel(error)) return Promise.reject(error);
   const message = error.response?.data?.message || error.message || 'No se pudo conectar con el servidor.';
   return Promise.reject(new Error(message));
 });
@@ -24,9 +25,13 @@ export const authService = {
 };
 
 export const resourceService = {
-  list: (resource, { page = 0, size = 8, search = '' } = {}) => api.get(`/${resource}`, { params: { page, size, search } }).then((response) => response.data),
+  list: (resource, { page = 0, size = 8, search = '', status = '', signal } = {}) => api.get(`/${resource}`, { params: { page, size, search, status }, signal }).then((response) => response.data),
   create: (resource, item) => api.post(`/${resource}`, item).then((response) => response.data),
   update: (resource, id, item) => api.put(`/${resource}/${id}`, item).then((response) => response.data),
   remove: (resource, id) => api.delete(`/${resource}/${id}`),
+};
+
+export const reportService = {
+  summary: () => api.get('/reportes/resumen').then((response) => response.data),
 };
 

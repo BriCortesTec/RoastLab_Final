@@ -90,7 +90,7 @@ export default function App() {
   } else if (activePage === 'lots') {
     pageContent = <Lots items={data.lots} cafes={data.cafes} onSave={(lots) => saveData({ ...data, lots })} notify={notify} user={user} />;
   } else if (activePage === 'profiles') {
-    pageContent = <Profiles items={data.profiles} onSave={(profiles) => saveData({ ...data, profiles })} notify={notify} user={user} />;
+    pageContent = <Profiles items={data.profiles} onSave={(profiles) => saveData({ ...data, profiles })} notify={notify} navigate={navigate} user={user} />;
   } else if (activePage === 'roasts') {
     pageContent = <RoastForm data={data} onSave={async (roast) => {
       if (demoMode) {
@@ -117,6 +117,7 @@ export default function App() {
           events: roast.events.map((event) => ({ type: event.type, shortName: event.short, label: event.label, seconds: event.seconds, temperature: event.temperature })),
           adjustments: roast.adjustments.map(({ type, label, value, unit, seconds, temperature }) => ({ type, label, value: Number(value), unit: unit || '', seconds, temperature })),
         });
+        saveData({ ...data, roasts: [roast, ...data.roasts] });
       }
       navigate('history');
       notify('Tueste guardado.');

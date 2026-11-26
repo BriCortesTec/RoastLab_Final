@@ -19,8 +19,10 @@ Abre la dirección local que muestre Vite, normalmente `http://localhost:5173/`.
 - Paneles de inicio con navegación por rol (administración, gerencia y tostador).
 - Catálogos de cafés, lotes y perfiles con búsqueda, paginación, alta, edición y eliminación.
 - Registro de tuestes con cronómetro, lecturas manuales y curva que se actualiza al agregar cada temperatura.
-- Historial para consultar la curva guardada y reportes básicos.
-- Validación de pesos e inventario; el RoR queda pendiente para una siguiente etapa.
+- Historial para consultar las curvas guardadas y crear perfiles a partir de un tueste.
+- Reportes de producción consultados desde la API.
+- Cálculo del último RoR entre dos lecturas; todavía no se presenta una gráfica independiente de RoR.
+- Validación de pesos y existencias. El backend descuenta el café al guardar el tueste y lo restituye si se elimina.
 - Diseño adaptable para pantallas pequeñas.
 - Cliente Axios en `src/services/api.js`, preparado para enviar el JWT.
 
@@ -65,15 +67,21 @@ El recorrido es `main.jsx` → `App.jsx` → la pantalla de `pages` que correspo
 
 `main.jsx` importa `global.css`. Cada página o componente importa su hoja de estilos específica; por eso puedes trabajar en `auth.css` para cambiar el login sin buscar esas reglas entre los estilos del dashboard.
 
-## Probar el tueste de demostración
+## Modo de demostración
 
-En la aplicación, abre **Registrar tueste**, completa los datos y selecciona **Iniciar tueste**. Escribe una lectura de temperatura y pulsa **Registrar temperatura** cada vez que quieras añadir un punto a la curva. Registra al menos dos lecturas, indica el peso de salida y finaliza el tueste. Luego abre el historial y pulsa **Ver curva**. Todo queda guardado en este navegador; no se necesita una conexión con un termómetro ni con el backend para esta demostración.
+Si `VITE_API_URL` no está configurada, abre **Registrar tueste**, completa los datos y prepara el registro. Escribe una lectura y pulsa **Registrar temperatura** para añadir puntos a la curva. El modo demo usa los datos de ejemplo y guarda los cambios en este navegador; no requiere un termómetro ni conexión con el backend.
 
-## Datos y backend
+## Conectar con el backend
 
-El backend actual contiene las entidades y migraciones de la base de datos, pero aún no define controladores ni rutas REST. Por eso, el login y el registro funcionan en modo local si no existe `VITE_API_URL`; los catálogos guardan sus cambios en el navegador y usan datos de ejemplo. Esta demostración no guarda los catálogos en MySQL.
+El backend expone rutas REST. Para usarlas en desarrollo, copia `.env.example` como `.env` y deja esta URL:
 
-Cuando el backend tenga rutas disponibles, copia `.env.example` como `.env`, ajusta `VITE_API_URL` y acuerda las rutas y el formato JSON con quien desarrolla el backend. El cliente Axios ya incluye timeout, encabezado JSON, token `Bearer` y manejo del mensaje de error. Las funciones `authService` y `resourceService` dejan el punto central para conectar esas rutas.
+```env
+VITE_API_URL=http://localhost:8080/api
+```
+
+Reinicia Vite después de crear o modificar `.env`. En modo API, el frontend usa login/registro y conecta cafés, lotes, perfiles, tuestes, historial y reportes; las listas se buscan y paginan en el servidor. Las operaciones de catálogo requieren un usuario con rol administrador o gerente. El tostador puede consultar catálogos y registrar sus propios tuestes.
+
+Si la variable no existe, el frontend entra al modo demo y guarda cambios en `localStorage`. El cliente Axios de `src/services/api.js` agrega el JWT a las peticiones protegidas y muestra errores del servidor.
 
 Para compilar la versión de entrega:
 
@@ -81,4 +89,4 @@ Para compilar la versión de entrega:
 npm run build
 ```
 
-La configuración conserva la ruta `/t3_act8_eq02/` para despliegues en ese subdirectorio y usa `/` durante desarrollo local.
+La configuración de Vite genera rutas desde `/`, que corresponde a la configuración de Nginx y al dominio `https://roastlab.site/`.
