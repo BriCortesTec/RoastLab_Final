@@ -11,7 +11,10 @@ import com.roastlab.backend.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -79,7 +82,9 @@ public class TuesteService {
     }
 
     public void eliminar(Integer id) {
-        tuesteRepository.delete(buscarEntidad(id));
+        Tueste tueste = buscarEntidad(id);
+        restaurarInventario(tueste);
+        tuesteRepository.delete(tueste);
     }
 
     private static final String ESTADO_COMPLETADO = "Completado";
@@ -141,17 +146,45 @@ public class TuesteService {
             }
         }
 
+        restaurarInventario(tueste);
         tueste.getLotes().clear();
+        // En una edición puede volver a asociarse el mismo lote; se eliminan
+        // primero las relaciones anteriores para respetar la clave compuesta.
+        if (tueste.getIdTueste() != null) tuesteRepository.flush();
+        if (dto.lots() == null || dto.lots().isEmpty()) {
+            throw new IllegalArgumentException("El tueste debe consumir al menos un lote.");
+        }
+        Set<Integer> lotesIncluidos = new HashSet<>();
         if (dto.lots() != null) {
             for (TuesteLoteDTO item : dto.lots()) {
+                if (item.lotId() == null || item.quantityKg() == null || item.quantityKg().signum() <= 0) {
+                    throw new IllegalArgumentException("Cada lote debe tener una cantidad utilizada mayor a cero.");
+                }
+                if (!lotesIncluidos.add(item.lotId())) {
+                    throw new IllegalArgumentException("No repitas el mismo lote en un tueste.");
+                }
                 LoteCafe lote = loteRepository.findById(item.lotId())
                     .orElseThrow(() -> new NotFoundException("No existe el lote con id: " + item.lotId()));
+                BigDecimal disponible = lote.getPesoDisponibleKg() == null ? BigDecimal.ZERO : lote.getPesoDisponibleKg();
+                if (disponible.compareTo(item.quantityKg()) < 0) {
+                    throw new IllegalArgumentException("El lote " + lote.getCodigoLote()
+                        + " solo tiene " + disponible + " kg disponibles.");
+                }
+                lote.setPesoDisponibleKg(disponible.subtract(item.quantityKg()));
                 TuesteLote relacion = new TuesteLote();
                 relacion.setTueste(tueste);
                 relacion.setLote(lote);
                 relacion.setCantidadUtilizadaKg(item.quantityKg());
                 tueste.getLotes().add(relacion);
             }
+        }
+    }
+
+    private void restaurarInventario(Tueste tueste) {
+        for (TuesteLote relacion : tueste.getLotes()) {
+            LoteCafe lote = relacion.getLote();
+            BigDecimal disponible = lote.getPesoDisponibleKg() == null ? BigDecimal.ZERO : lote.getPesoDisponibleKg();
+            lote.setPesoDisponibleKg(disponible.add(relacion.getCantidadUtilizadaKg()));
         }
     }
 

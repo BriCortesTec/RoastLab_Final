@@ -1,8 +1,37 @@
 import Icon from './Icon.jsx';
 import { NAVIGATION, PAGE_LABELS, ROLE_NAMES } from '../data/navigation.js';
 import '../styles/layout.css';
-export default function Sidebar({ user, activePage, onNavigate, onLogout, isOpen, onClose }) {
+
+const PAGE_ICONS = {
+  dashboard: 'grid',
+  cafes: 'bean',
+  lots: 'layers',
+  profiles: 'sliders',
+  roasts: 'flame',
+  history: 'clock',
+};
+
+export default function Sidebar({
+  user,
+  activePage,
+  onNavigate,
+  onLogout,
+  isOpen,
+  isCollapsed,
+  onClose,
+}) {
   const pages = NAVIGATION[user.role] || NAVIGATION.tostador;
+  const userInitial = user.name?.[0]?.toUpperCase() || 'N';
+  const userFullName = `${user.name} ${user.surname || ''}`.trim();
+  const userRoleLabel = ROLE_NAMES[user.role] || 'Tostador';
+
+  const sidebarClasses = [
+    'sidebar',
+    isOpen ? 'sidebar-open' : '',
+    isCollapsed ? 'sidebar-collapsed' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <>
@@ -14,7 +43,8 @@ export default function Sidebar({ user, activePage, onNavigate, onLogout, isOpen
         />
       )}
 
-      <aside className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
+      <aside className={sidebarClasses}>
+        {/* Marca */}
         <div className="brand brand-sidebar">
           <span className="brand-icon">
             <Icon name="bean" size={25} />
@@ -24,7 +54,11 @@ export default function Sidebar({ user, activePage, onNavigate, onLogout, isOpen
           </span>
         </div>
 
-        <div className="workspace">
+        {/* Espacio de trabajo */}
+        <div
+          className="workspace"
+          title={isCollapsed ? 'RoastLab Café · Espacio de trabajo' : undefined}
+        >
           <span className="workspace-icon">R</span>
           <div>
             <b>RoastLab Café</b>
@@ -33,38 +67,31 @@ export default function Sidebar({ user, activePage, onNavigate, onLogout, isOpen
           <span className="workspace-chevron">⌄</span>
         </div>
 
+        {/* Navegación principal */}
         <div className="side-caption">MENÚ PRINCIPAL</div>
-
         <nav className="side-nav">
-          {pages.map((page) => (
-            <button
-              key={page}
-              className={`nav-item ${activePage === page ? 'nav-active' : ''}`}
-              onClick={() => onNavigate(page)}
-            >
-              <Icon
-                name={
-                  page === 'dashboard'
-                    ? 'grid'
-                    : page === 'cafes'
-                      ? 'bean'
-                      : page === 'lots'
-                        ? 'layers'
-                        : page === 'profiles'
-                          ? 'sliders'
-                          : page === 'roasts'
-                            ? 'flame'
-                            : page === 'history'
-                              ? 'clock'
-                              : 'chart'
-                }
-              />
-              <span>{PAGE_LABELS[page]}</span>
-              {page === 'roasts' && <span className="nav-plus">+</span>}
-            </button>
-          ))}
+          {pages.map((page) => {
+            const isActive = activePage === page;
+            const label = PAGE_LABELS[page];
+            const iconName = PAGE_ICONS[page] || 'chart';
+
+            return (
+              <button
+                key={page}
+                aria-label={label}
+                title={isCollapsed ? label : undefined}
+                className={`nav-item ${isActive ? 'nav-active' : ''}`}
+                onClick={() => onNavigate(page)}
+              >
+                <Icon name={iconName} />
+                <span>{label}</span>
+                {page === 'roasts' && <span className="nav-plus">+</span>}
+              </button>
+            );
+          })}
         </nav>
 
+        {/* Sección inferior */}
         <div className="sidebar-bottom">
           <div className="side-help">
             <div className="help-mark">?</div>
@@ -76,12 +103,10 @@ export default function Sidebar({ user, activePage, onNavigate, onLogout, isOpen
           </div>
 
           <button className="user-card" onClick={onLogout}>
-            <span className="avatar">{user.name?.[0]?.toUpperCase() || 'N'}</span>
+            <span className="avatar">{userInitial}</span>
             <span className="user-meta">
-              <b>
-                {user.name} {user.surname || ''}
-              </b>
-              <small>{ROLE_NAMES[user.role] || 'Tostador'}</small>
+              <b>{userFullName}</b>
+              <small>{userRoleLabel}</small>
             </span>
             <Icon name="logout" size={17} />
           </button>
