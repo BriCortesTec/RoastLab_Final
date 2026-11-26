@@ -82,6 +82,7 @@ export default function HistoryReports({ data, page, onSaveProfile, notify, canM
     const profile = {
       id: Date.now(),
       name,
+      createdAt: new Date().toISOString(),
       description: String(form.get('description') || '').trim(),
       level: String(form.get('level') || 'Medio'),
       flavorNotes: String(form.get('flavorNotes') || '').trim(),
@@ -90,6 +91,10 @@ export default function HistoryReports({ data, page, onSaveProfile, notify, canM
       finalTemp: measurements.at(-1)?.temperature ?? 0,
       duration: profileSource.duration,
       sourceRoastId: profileSource.id,
+      referenceLotId: profileSource.lotId,
+      referenceLotCode: profileSource.lotCode,
+      referenceInputKg: profileSource.input,
+      referenceOutputKg: profileSource.output,
       measurements: [...measurements],
       events: [...(profileSource.events || [])],
       adjustments: [...(profileSource.adjustments || [])],

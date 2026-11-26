@@ -14,6 +14,8 @@ const emptyRoast = () => ({
   input: '',
   output: '',
   observations: '',
+  description: '',
+  level: 'Medio',
 });
 
 function formatTime(totalSeconds) {
@@ -87,7 +89,7 @@ const MACHINE_CONTROLS = [
   ['other', 'Otro ajuste'],
 ];
 
-export default function RoastForm({ data, onSave }) {
+export default function RoastForm({ data, onSave, profileCaptureMode = false }) {
   const [remoteLots, setRemoteLots] = useState([]);
   const [remoteProfiles, setRemoteProfiles] = useState([]);
   const [optionsLoading, setOptionsLoading] = useState(API_MODE);
@@ -174,7 +176,7 @@ export default function RoastForm({ data, onSave }) {
     if (!form.date) return setError('Selecciona la fecha del tueste.');
     if (!selectedLot) return setError('Selecciona el lote que vas a tostar.');
     if (Number(form.input) <= 0) return setError('El peso de entrada debe ser mayor a cero.');
-    if (Number(form.input) > Number(selectedLot.weight)) return setError(`El lote solo tiene ${selectedLot.weight} kg disponibles.`);
+    if (!profileCaptureMode && Number(form.input) > Number(selectedLot.weight)) return setError(`El lote solo tiene ${selectedLot.weight} kg disponibles.`);
     setMeasurements([]);
     setEvents([]);
     setAdjustments([]);
@@ -317,6 +319,8 @@ export default function RoastForm({ data, onSave }) {
       output: outputWeight,
       maxTemp: maximumTemperature,
       observations: form.observations.trim(),
+      description: form.description.trim(),
+      level: form.level,
       measurements,
       events,
       adjustments,
@@ -343,26 +347,29 @@ export default function RoastForm({ data, onSave }) {
   };
 
   return <section className="panel roast-form">
+    {profileCaptureMode && <div className="profile-capture-banner" role="status"><b>Creando un perfil de tueste en vivo</b><span>Este registro guardará una curva de referencia. No creará un tueste de producción ni descontará inventario.</span></div>}
     <div className="panel-head">
-      <div><h3>{phase === 'setup' ? 'Preparar nuevo tueste' : phase === 'recording' ? 'Tueste en curso' : 'Guardar resultado del tueste'}</h3><p>{phase === 'setup' ? 'Completa los datos y comienza a capturar la curva.' : phase === 'recording' ? 'Registra las temperaturas conforme avanza la tanda.' : 'Confirma el peso final y agrega observaciones.'}</p></div>
-      <div className={`roast-timer ${startedAt !== null && phase === 'recording' ? 'roast-timer-active' : ''}`}><Icon name="clock" size={18} /><strong>{formatTime(elapsed)}</strong><span>{phase === 'setup' ? 'LISTO' : phase === 'finishing' ? 'DETENIDO' : startedAt === null ? 'ESPERANDO' : 'EN CURSO'}</span></div>
+      <div><h3>{phase === 'setup' ? profileCaptureMode?'Preparar perfil en vivo':'Preparar nuevo tueste' : phase === 'recording' ? profileCaptureMode?'Construyendo perfil':'Tueste en curso' : profileCaptureMode?'Guardar perfil de referencia':'Guardar resultado del tueste'}</h3><p>{phase === 'setup' ? 'Completa los datos y comienza a capturar la curva.' : phase === 'recording' ? 'Registra las temperaturas conforme avanza la tanda.' : 'Confirma el peso final y agrega observaciones.'}</p></div>
+      
     </div>
 
     <div className="roast-section">
       <span className="form-section-title"><span>1</span> Datos del tueste</span>
       <div className="form-grid">
-        <label className="field field-wide">Nombre del tueste<input className="input" name="name" value={form.name} onChange={updateField} placeholder="Ej. Tueste de la mañana #025" minLength="3" maxLength="100" disabled={started} required /></label>
+        <label className="field field-wide">{profileCaptureMode?'Nombre del perfil':'Nombre del tueste'}<input className="input" name="name" value={form.name} onChange={updateField} placeholder={profileCaptureMode?'Ej. Perfil lavado medio':'Ej. Tueste de la mañana #025'} minLength="3" maxLength="100" disabled={started} required /></label>
+        {profileCaptureMode && <><label className="field">Nivel de tueste<select className="input" name="level" value={form.level} onChange={updateField} disabled={started}><option>Claro</option><option>Medio</option><option>Oscuro</option></select></label><label className="field field-wide">Descripción<input className="input" name="description" value={form.description} onChange={updateField} maxLength="500" disabled={started} placeholder="Qué quieres repetir de este perfil" /></label></>}
         <label className="field">Fecha del tueste<input className="input" type="date" name="date" value={form.date} onChange={updateField} disabled={started} required /></label>
-        <label className="field">Lote de café<select className="input" name="lotCode" value={form.lotCode} onChange={updateField} disabled={started||optionsLoading} required><option value="">{optionsLoading?'Cargando lotes…':'Selecciona un lote…'}</option>{roastLots.map((lot) => <option key={lot.id} value={lot.code} disabled={Number(lot.weight) <= 0}>{lot.code} · {lot.coffee} ({lot.weight} kg)</option>)}</select></label>
-        <label className="field">Perfil de tueste<select className="input" name="profile" value={form.profile} onChange={updateField} disabled={started||optionsLoading}><option value="">Sin perfil</option>{roastProfiles.map((profile) => <option key={profile.id} value={profile.name}>{profile.name}{profile.measurements?.length ? ' · con curva' : ''}</option>)}</select></label>
+        <label className="field">{profileCaptureMode?'Lote de referencia':'Lote de café'}<select className="input" name="lotCode" value={form.lotCode} onChange={updateField} disabled={started||optionsLoading} required><option value="">{optionsLoading?'Cargando lotes…':'Selecciona un lote…'}</option>{roastLots.map((lot) => <option key={lot.id} value={lot.code} disabled={!profileCaptureMode&&Number(lot.weight) <= 0}>{lot.code} · {lot.coffee} ({lot.weight} kg)</option>)}</select></label>
+        <label className="field">Perfil de tueste<select className="input" name="profile" value={profileCaptureMode?'':form.profile} onChange={updateField} disabled={profileCaptureMode||started||optionsLoading}><option value="">Sin perfil</option>{!profileCaptureMode&&roastProfiles.map((profile) => <option key={profile.id} value={profile.name}>{profile.name}{profile.measurements?.length ? ' · con curva' : ''}</option>)}</select></label>
         <label className="field">Peso de entrada (kg)<input className="input" type="number" name="input" value={form.input} onChange={updateField} min="0.01" step="0.01" placeholder="8.00" disabled={started} required /></label>
-        {selectedLot && <span className="lot-available">Disponible en este lote: <b>{selectedLot.weight} kg</b></span>}
+        {selectedLot && <span className="lot-available">{profileCaptureMode?'El lote se guarda solo como referencia; no se descuenta inventario.':<>Disponible en este lote: <b>{selectedLot.weight} kg</b></>}</span>}
       </div>
-      {!started && <button className="button button-primary start-roast-button" type="button" onClick={beginRoast}><Icon name="flame" size={18} /> Preparar registro de tueste</button>}
+      {!started && <button className="button button-primary start-roast-button" type="button" onClick={beginRoast}><Icon name="flame" size={18} /> {profileCaptureMode?'Empezar a construir perfil':'Preparar registro de tueste'}</button>}
     </div>
 
     {started && <>
       <div className="roast-section live-temperature-section">
+        <div className={`roast-timer ${startedAt !== null && phase === 'recording' ? 'roast-timer-active' : ''}`}><Icon name="clock" size={18} /><strong>{formatTime(elapsed)}</strong><span>{phase === 'setup' ? 'LISTO' : phase === 'finishing' ? 'DETENIDO' : startedAt === null ? 'ESPERANDO' : 'EN CURSO'}</span></div>
         <div className="live-section-heading"><span className="form-section-title"><span>2</span> Temperatura en vivo</span><span className="live-indicator"><i /> {startedAt === null ? 'Esperando primera lectura' : phase === 'recording' ? 'Captura activa' : 'Captura pausada'}</span></div>
         <TemperatureChart points={measurements} events={events} elapsed={elapsed} referencePoints={selectedProfile?.measurements || []} referenceLabel={selectedProfile?.name || 'Perfil objetivo'} />
         {selectedProfile && !selectedProfile.measurements?.length && <div className="profile-reference-note">Este perfil aún no tiene una curva guardada. Puedes crear uno desde un tueste terminado en el historial.</div>}

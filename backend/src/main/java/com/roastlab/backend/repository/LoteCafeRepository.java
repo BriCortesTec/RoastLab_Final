@@ -24,4 +24,6 @@ public interface LoteCafeRepository extends JpaRepository<LoteCafe, Integer> {
 
     @EntityGraph(attributePaths = "cafe")
     java.util.List<LoteCafe> findAllByOrderByCodigoLoteAsc();
+
+    java.util.Optional<LoteCafe> findByCodigoLote(String codigoLote);
 }

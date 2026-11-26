@@ -36,6 +36,16 @@ public class PerfilTueste {
     @Column(name = "nivel_tueste", nullable = false, length = 30)
     private String nivelTueste;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_lote_referencia")
+    private LoteCafe loteReferencia;
+
+    @Column(name = "peso_entrada_referencia_kg", precision = 10, scale = 2)
+    private BigDecimal pesoEntradaReferenciaKg;
+
+    @Column(name = "peso_salida_referencia_kg", precision = 10, scale = 2)
+    private BigDecimal pesoSalidaReferenciaKg;
+
     @Column(name = "fecha_creacion", insertable = false, updatable = false)
     private LocalDateTime fechaCreacion;
 
@@ -110,6 +120,30 @@ public class PerfilTueste {
 
     public void setNivelTueste(String nivelTueste) {
         this.nivelTueste = nivelTueste;
+    }
+
+    public LoteCafe getLoteReferencia() {
+        return loteReferencia;
+    }
+
+    public void setLoteReferencia(LoteCafe loteReferencia) {
+        this.loteReferencia = loteReferencia;
+    }
+
+    public BigDecimal getPesoEntradaReferenciaKg() {
+        return pesoEntradaReferenciaKg;
+    }
+
+    public void setPesoEntradaReferenciaKg(BigDecimal pesoEntradaReferenciaKg) {
+        this.pesoEntradaReferenciaKg = pesoEntradaReferenciaKg;
+    }
+
+    public BigDecimal getPesoSalidaReferenciaKg() {
+        return pesoSalidaReferenciaKg;
+    }
+
+    public void setPesoSalidaReferenciaKg(BigDecimal pesoSalidaReferenciaKg) {
+        this.pesoSalidaReferenciaKg = pesoSalidaReferenciaKg;
     }
 
     public LocalDateTime getFechaCreacion() {

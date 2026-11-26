@@ -145,115 +145,6 @@
   color: #4f6853;
 }
 
-.manual-profile-curve {
-  display: grid;
-  gap: 14px;
-  margin-top: 20px;
-  padding-top: 18px;
-  border-top: 1px solid #edf0e9;
-}
-
-.manual-profile-heading,
-.profile-live-shortcut {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.manual-profile-heading h4,
-.manual-profile-module h5 {
-  margin: 0;
-  color: #3e5c46;
-  font-size: 14px;
-}
-
-.manual-profile-heading p,
-.manual-profile-module > p {
-  margin: 4px 0 0;
-  color: #858e84;
-  font-size: 10px;
-}
-
-.manual-profile-heading > span {
-  flex: 0 0 auto;
-  color: #687969;
-  font-size: 10px;
-}
-
-.manual-profile-module {
-  display: grid;
-  gap: 10px;
-  padding: 13px;
-  border: 1px solid #e9ede6;
-  border-radius: 9px;
-  background: #fbfcfa;
-}
-
-.manual-profile-entry {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
-  align-items: end;
-  gap: 10px;
-}
-
-.manual-profile-entry .button {
-  min-height: 37px;
-  white-space: nowrap;
-}
-
-.manual-profile-adjustment-entry {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.manual-profile-reading-list {
-  display: grid;
-  gap: 5px;
-}
-
-.manual-profile-reading-list > div {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 12px;
-  padding: 7px 9px;
-  border-radius: 6px;
-  background: #fff;
-  color: #6f7a70;
-  font-size: 10px;
-}
-
-.manual-profile-reading-list b {
-  color: #48654e;
-}
-
-.profile-live-shortcut {
-  margin-top: 13px;
-  padding-top: 13px;
-  border-top: 1px solid #edf0e9;
-  color: #778277;
-  font-size: 10px;
-}
-
-.profile-live-shortcut .button {
-  color: #52735b;
-}
-
-@media (max-width: 640px) {
-  .manual-profile-entry,
-  .manual-profile-adjustment-entry {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .manual-profile-entry .button {
-    grid-column: 1 / -1;
-  }
-
-  .profile-live-shortcut {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-}
-
 .table-footer {
   display: flex;
   align-items: center;
@@ -390,3 +281,40 @@
     grid-column: auto;
   }
 }
+
+
+/* Constructor de perfiles: mismo lenguaje visual y controles que el registro de tueste. */
+.profile-builder-overlay { z-index: 1000; padding: 20px; }
+.profile-builder-modal { width: min(1120px, 96vw); max-width: 1120px; max-height: calc(100vh - 40px); overflow: auto; padding: 22px 26px; }
+.profile-builder-modal .modal-header { position: sticky; top: -22px; z-index: 2; margin: -22px -26px 0; padding: 22px 26px 14px; background: #fff; }
+.profile-builder-modal .modal-header h3 { margin: 5px 0 4px; }
+.profile-builder-modal .modal-header p { margin: 0; color: #899289; font-size: 13px; }
+.profile-builder-content.roast-form { width: 100%; max-width: none; padding: 0; }
+.profile-builder-content .profile-metadata-section { border-top: 0; }
+.profile-builder-content .profile-curve-section { padding-bottom: 0; }
+.profile-builder-content .profile-temperature-entry { grid-template-columns: minmax(150px, 1fr) minmax(140px, .8fr) auto minmax(105px, auto); align-items: end; }
+.profile-builder-content .profile-temperature-entry .button { min-height: 38px; }
+.profile-builder-content .machine-adjustment-entry { grid-template-columns: minmax(170px,1fr) minmax(140px,.8fr) minmax(120px,.7fr) auto; }
+.profile-builder-content .machine-adjustment-entry .button { min-height: 38px; }
+.profile-manual-badge { margin-bottom: 15px; color: #718274; font-size: 11px; }
+@media (max-width: 760px) {
+  .profile-builder-overlay { padding: 8px; }
+  .profile-builder-modal { width: 100%; max-height: calc(100vh - 16px); padding: 16px; }
+  .profile-builder-modal .modal-header { top: -16px; margin: -16px -16px 0; padding: 16px 16px 12px; }
+  .profile-builder-content .profile-temperature-entry,
+  .profile-builder-content .machine-adjustment-entry { grid-template-columns: 1fr 1fr; }
+  .profile-builder-content .profile-temperature-entry .button,
+  .profile-builder-content .machine-adjustment-entry .button { width: 100%; }
+}
+@media (max-width: 480px) {
+  .profile-builder-content .profile-temperature-entry,
+  .profile-builder-content .machine-adjustment-entry { grid-template-columns: 1fr; }
+}
+
+.profile-capture-modes { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.profile-capture-modes .button { min-height: 36px; font-size: 11px; }
+.profile-reference-data { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 14px 0; padding: 15px; border: 1px solid #e1e6ea; border-radius: 12px; background: #f7f9fb; color: #758595; }
+.profile-reference-data > b { grid-column: 1 / -1; color: #344a3b; }
+.profile-reference-data span { min-width: 0; }
+.row-actions button { white-space: nowrap; }
+@media (max-width: 600px) { .profile-reference-data { grid-template-columns: 1fr; } }

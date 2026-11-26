@@ -15,6 +15,10 @@ public record PerfilTuesteDTO(
     @DecimalMin(value = "0.0", message = "Temperatura inválida.") @DecimalMax(value = "300.0", message = "Máximo 300 °C.") BigDecimal finalTemp,
     @DecimalMin(value = "0.0", message = "La duración no puede ser negativa.") BigDecimal duration,
     @NotBlank(message = "El nivel de tueste es obligatorio.") @Size(max = 30, message = "Máximo 30 caracteres.") String level,
+    Integer referenceLotId,
+    String referenceLotCode,
+    @DecimalMin(value = "0.0", message = "El peso inicial no puede ser negativo.") BigDecimal referenceInputKg,
+    @DecimalMin(value = "0.0", message = "El peso final no puede ser negativo.") BigDecimal referenceOutputKg,
     LocalDateTime createdAt,
     List<MedicionPerfilDTO> measurements,
     List<AjustePerfilDTO> adjustments
