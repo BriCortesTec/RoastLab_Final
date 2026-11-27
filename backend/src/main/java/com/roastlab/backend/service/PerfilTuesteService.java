@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -109,12 +110,14 @@ public class PerfilTuesteService {
 
     private PerfilTuesteDTO toDTO(PerfilTueste perfil) {
         List<MedicionPerfilDTO> mediciones = perfil.getMediciones().stream()
+            .sorted(Comparator.comparing(MedicionPerfil::getTiempoSegundos))
             .map(m -> new MedicionPerfilDTO(
                 m.getIdMedicionPerfil(), m.getTiempoSegundos(),
                 m.getTemperaturaObjetivoC(), m.getTipoEvento()
             )).toList();
 
         List<AjustePerfilDTO> ajustes = perfil.getAjustes().stream()
+            .sorted(Comparator.comparing(AjustePerfil::getTiempoSegundos))
             .map(a -> new AjustePerfilDTO(
                 a.getIdAjustePerfil(), a.getTipo(), a.getEtiqueta(),
                 a.getValor(), a.getUnidad(), a.getTiempoSegundos(),

@@ -14,7 +14,7 @@ const EVENT_LABELS = {
 };
 
 const fromApi = (profile) => {
-  const measurements = profile.measurements || [];
+  const measurements = [...(profile.measurements || [])].sort((a, b) => Number(a.seconds) - Number(b.seconds));
   return {
     ...profile,
     duration: Number(profile.duration || 0),
@@ -23,9 +23,13 @@ const fromApi = (profile) => {
       const [short, label] = EVENT_LABELS[point.eventType] || [point.eventType, point.eventType];
       return { type: point.eventType, short, label, seconds: point.seconds, temperature: point.temperature };
     }),
-    adjustments: profile.adjustments || [],
+    adjustments: [...(profile.adjustments || [])].sort((a, b) => Number(a.seconds) - Number(b.seconds)),
   };
 };
+const newestFirst = (profiles) => [...profiles].sort((a, b) => {
+  const dateDifference = Date.parse(b.createdAt || '') - Date.parse(a.createdAt || '');
+  return (Number.isNaN(dateDifference) ? 0 : dateDifference) || Number(b.id || 0) - Number(a.id || 0);
+});
 
 export default function Profiles({ items, lots: localLots = [], onSave, notify, user }) {
   const [profiles, setProfiles] = useState([]);
@@ -44,7 +48,7 @@ export default function Profiles({ items, lots: localLots = [], onSave, notify, 
       const result = await resourceService.list('perfiles', {
         page: requestedPage, size: PAGE_SIZE, search, signal,
       });
-      setProfiles((result.content || []).map(fromApi));
+      setProfiles(newestFirst((result.content || []).map(fromApi)));
       setPageInfo({
         totalElements: result.totalElements ?? result.content?.length ?? 0,
         totalPages: result.totalPages ?? 1,

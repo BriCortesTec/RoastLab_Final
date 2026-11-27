@@ -208,7 +208,12 @@
   background: #fff;
   color: #7c887d;
   font-size: 9px;
+  cursor: pointer;
+  font-family: inherit;
 }
+
+.saved-event-chip:hover,
+.saved-event-chip-selected { border-color: #9caf9d; box-shadow: 0 0 0 2px #dfe9df; }
 
 .saved-event-chip b {
   color: #486b4d;
@@ -294,7 +299,43 @@
   background: #fff;
   color: #849087;
   font-size: 10px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease, box-shadow .15s ease;
 }
+
+.measurement-row:hover,
+.measurement-row-selected {
+  border-color: #9caf9d;
+  background: #f7faf6;
+  box-shadow: 0 0 0 2px #dfe9df;
+}
+
+.measurement-form-actions { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+.measurement-form-actions .button { white-space: nowrap; }
+.saved-event-chip:focus-visible,
+.measurement-row:focus-visible { outline: 2px solid #6f9273; outline-offset: 2px; }
+
+.machine-adjustment-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 9px;
+  border: 1px solid #edf0eb;
+  border-radius: 7px;
+  background: #fff;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.machine-adjustment-row:hover,
+.machine-adjustment-row-selected { border-color: #9caf9d; background: #f7faf6; box-shadow: 0 0 0 2px #dfe9df; }
+.machine-adjustment-row b { color: #527057; font-variant-numeric: tabular-nums; }
+.machine-adjustment-row small { margin-left: auto; color: #969d95; }
+.machine-adjustment-row:focus-visible { outline: 2px solid #6f9273; outline-offset: 2px; }
 
 .measurement-row b {
   color: #385940;

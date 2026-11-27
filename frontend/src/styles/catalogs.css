@@ -294,8 +294,11 @@
 .profile-builder-content .profile-curve-section { padding-bottom: 0; }
 .profile-builder-content .profile-temperature-entry { grid-template-columns: minmax(150px, 1fr) minmax(140px, .8fr) auto minmax(105px, auto); align-items: end; }
 .profile-builder-content .profile-temperature-entry .button { min-height: 38px; }
+.profile-builder-content .measurement-form-actions { align-self: end; }
 .profile-builder-content .machine-adjustment-entry { grid-template-columns: minmax(170px,1fr) minmax(140px,.8fr) minmax(120px,.7fr) auto; }
 .profile-builder-content .machine-adjustment-entry .button { min-height: 38px; }
+.profile-builder-content .machine-adjustment-entry.is-editing { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.profile-builder-content .adjustment-form-actions { display: flex; flex-wrap: wrap; gap: 7px; align-items: end; }
 .profile-manual-badge { margin-bottom: 15px; color: #718274; font-size: 11px; }
 @media (max-width: 760px) {
   .profile-builder-overlay { padding: 8px; }
@@ -305,6 +308,7 @@
   .profile-builder-content .machine-adjustment-entry { grid-template-columns: 1fr 1fr; }
   .profile-builder-content .profile-temperature-entry .button,
   .profile-builder-content .machine-adjustment-entry .button { width: 100%; }
+  .profile-builder-content .adjustment-form-actions { grid-column: 1 / -1; }
 }
 @media (max-width: 480px) {
   .profile-builder-content .profile-temperature-entry,
