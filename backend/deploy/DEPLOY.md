@@ -77,9 +77,11 @@ Verifica la calidad en https://www.mail-tester.com (SPF y DKIM en verde). Si el 
 
 ## 7. Twilio
 
-- **SMS**: con cuenta de prueba solo envía a números *verificados* en la consola de Twilio.
-- **WhatsApp**: cada número que vaya a recibir mensajes debe unirse al *sandbox* (enviar el código `join ...` al número de Twilio). `twilio.whatsapp-from=whatsapp:+14155238886`.
-- Prueba desde Bruno: `06-notificaciones` → "Prueba de SMS / WhatsApp".
+- **SMS**: descartado para esta entrega.
+- **WhatsApp**: integración mediante Meta WhatsApp Cloud API.
+  Configurar `META_WHATSAPP_PHONE_NUMBER_ID` y `META_WHATSAPP_TOKEN`
+  como variables de entorno. La versión de Graph API se configura
+  mediante `meta.whatsapp.api-version`.
 
 ## Comprobación final
 
