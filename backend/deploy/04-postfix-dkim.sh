@@ -1,8 +1,8 @@
 #!/bin/bash
 # Ejecutar en el VPS como root:  bash 04-postfix-dkim.sh
-# Configura Postfix (solo envio, escucha unicamente en localhost) y OpenDKIM para roastlab.site.
+# Configura Postfix (solo envio, escucha unicamente en localhost) y OpenDKIM para roastlab.space.
 set -euo pipefail
-DOMINIO=roastlab.site
+DOMINIO=roastlab.space
 SELECTOR=mail
 IP=$(curl -s https://api.ipify.org)
 

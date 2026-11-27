@@ -16,7 +16,7 @@ fi
 
 echo "==> Paquetes"
 export DEBIAN_FRONTEND=noninteractive
-debconf-set-selections <<< "postfix postfix/mailname string roastlab.site"
+debconf-set-selections <<< "postfix postfix/mailname string roastlab.space"
 debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Internet Site'"
 apt-get update
 apt-get install -y openjdk-21-jre-headless mysql-server nginx certbot python3-certbot-nginx \

@@ -4,13 +4,13 @@ spring.datasource.username=roastlab
 spring.datasource.password=CAMBIAR
 app.jwt.secret=CAMBIAR_BASE64_ALEATORIO_openssl_rand_-base64_48
 
-app.cors.allowed-origins=https://roastlab.site
-app.frontend-url=https://roastlab.site
+app.cors.allowed-origins=https://roastlab.space,https://www.roastlab.space
+app.frontend-url=https://roastlab.space
 
 # Postfix local
 spring.mail.host=localhost
 spring.mail.port=25
-app.mail.from=no-reply@roastlab.site
+app.mail.from=no-reply@roastlab.space
 
 # Twilio
 twilio.account-sid=CAMBIAR

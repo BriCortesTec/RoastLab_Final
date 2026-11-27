@@ -1,12 +1,12 @@
 # Despliegue de RoastLab en el VPS (Ubuntu, 4 GB de RAM)
 
-Dominio: `roastlab.site` · Sistema: Ubuntu · Todo corre en el mismo servidor: MySQL, backend (JAR + systemd), frontend (build estático en Nginx), Postfix.
+Dominio: `roastlab.space` · Sistema: Ubuntu · Todo corre en el mismo servidor: MySQL, backend (JAR + systemd), frontend (build estático en Nginx), Postfix.
 
 > **Compilar en tu computadora, no en el VPS.** El script `deploy-local.sh` compila aquí y sube el resultado.
 
 ## 0. Antes de empezar
 
-1. **DNS** (panel donde compraste `roastlab.site`): crea los registros `A` de `@`, `www` y `mail` apuntando a la IP del VPS. Los demás (MX, SPF, DKIM, DMARC) te los imprime el paso 4.
+1. **DNS** (panel donde compraste `roastlab.space`): crea los registros `A` de `@`, `www` y `mail` apuntando a la IP del VPS. Los demás (MX, SPF, DKIM, DMARC) te los imprime el paso 4.
 2. **Puerto 25**: prueba `nc -vz -w 5 gmail-smtp-in.l.google.com 25`. Si hace timeout, el proveedor lo bloquea: abre un ticket de soporte pidiendo desbloquear el SMTP saliente.
 3. Copia la carpeta `deploy/` al VPS: `scp -r backend/deploy ubuntu@13.185.56.85:~/`.
 
@@ -85,8 +85,8 @@ Verifica la calidad en https://www.mail-tester.com (SPF y DKIM en verde). Si el 
 
 | Prueba | Esperado |
 |---|---|
-| `https://roastlab.site` | Login con candado (HTTPS válido) |
-| `curl -s https://roastlab.site/api/cafes` | `401` en JSON (protegido) |
+| `https://roastlab.space` | Login con candado (HTTPS válido) |
+| `curl -s https://roastlab.space/api/cafes` | `401` en JSON (protegido) |
 | Login con la cuenta administradora creada en el VPS | Entra al panel |
 | `systemctl status roastlab nginx postfix mysql` | todos `active` |
 | `free -m` | swap en uso moderado, sin OOM |
