@@ -220,7 +220,8 @@ public class TuesteService {
         Integer profileId = tueste.getPerfil() == null ? null : tueste.getPerfil().getIdPerfil();
 
         return new TuesteDTO(
-            tueste.getIdTueste(), tueste.getNombre(), tueste.getFechaTueste(),
+            tueste.getIdTueste(), (tueste.getUsuario().getNombre() + " " + tueste.getUsuario().getApellido()).trim(),
+            tueste.getNombre(), tueste.getFechaTueste(),
             lotName, lotCode, profileId, profileName, tueste.getDuracionMin(),
             tueste.getPesoEntradaKg(), tueste.getPesoSalidaKg(),
             tueste.getTemperaturaMaxima(), tueste.getEstado(), tueste.getObservaciones(),

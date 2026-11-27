@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { NAVIGATION } from '../data/navigation.js';
 import Icon from '../components/Icon.jsx';
 import EmptyState from '../components/EmptyState.jsx';
 import { reportService, resourceService } from '../services/api.js';
@@ -46,6 +47,7 @@ export default function Dashboard({ user, data, navigate }) {
   const totalStock = dashboardData
     ? dashboardData.lots.reduce((sum, item) => sum + Number(item.weight || 0), 0)
     : 0;
+  const pages = NAVIGATION[user.role] || NAVIGATION.tostador;
   const quick = [
     {
       label: 'Registrar tueste',
@@ -55,8 +57,8 @@ export default function Dashboard({ user, data, navigate }) {
       className: 'quick-green'
     },
     {
-      label: 'Agregar lote',
-      detail: 'Actualiza tu inventario',
+      label: user.role === 'tostador' ? 'Consultar lotes' : 'Agregar lote',
+      detail: user.role === 'tostador' ? 'Consulta las existencias' : 'Actualiza tu inventario',
       icon: 'layers',
       page: 'lots',
       className: 'quick-gold'
@@ -79,9 +81,9 @@ export default function Dashboard({ user, data, navigate }) {
             Buenos días, {user.name} <span>☕</span>
           </h2>
           <p>Todo listo para preparar un gran día de tueste.</p>
-          <button className="button button-white" onClick={() => navigate('roasts')}>
+          {pages.includes('roasts') && <button className="button button-white" onClick={() => navigate('roasts')}>
             Registrar un tueste <Icon name="arrow" size={17} />
-          </button>
+          </button>}
         </div>
 
         <div className="welcome-art">
@@ -169,7 +171,7 @@ export default function Dashboard({ user, data, navigate }) {
           </div>
 
           <div className="quick-list">
-            {quick.map((item) => (
+            {quick.filter(item => pages.includes(item.page)).map((item) => (
               <button
                 className={`quick-link ${item.className}`}
                 key={item.page}

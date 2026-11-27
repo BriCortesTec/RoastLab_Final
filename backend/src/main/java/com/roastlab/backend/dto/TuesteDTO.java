@@ -9,6 +9,7 @@ import java.util.List;
 
 public record TuesteDTO(
     Integer id,
+    String registeredBy,
     @NotBlank(message = "El nombre del tueste es obligatorio.") @Size(max = 100, message = "Máximo 100 caracteres.") String name,
     @NotNull(message = "La fecha es obligatoria.") LocalDateTime date,
     String lot,

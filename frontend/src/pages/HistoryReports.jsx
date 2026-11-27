@@ -21,7 +21,7 @@ const fromApi = (roast) => ({
   adjustments: roast.adjustments || [],
 });
 
-export default function HistoryReports({ data, page, onSaveProfile, notify, canManageProfiles = true }) {
+export default function HistoryReports({ data, page, onSaveProfile, notify, canManageProfiles = false }) {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('Todos');
   const [currentPage, setCurrentPage] = useState(1);
@@ -138,9 +138,9 @@ export default function HistoryReports({ data, page, onSaveProfile, notify, canM
       <div className="panel-head data-panel-head"><div><h3>Historial de tuestes</h3><p>Consulta tus tandas y sus curvas de temperatura.</p></div><div className="history-count">{API_MODE?remotePageInfo.totalElements:filteredRoasts.length} registros</div></div>
       {remoteError&&<div className="error-note" role="alert">No se pudo cargar el historial: {remoteError}</div>}
       <div className="table-tools"><label className="search-box"><Icon name="search" size={17} /><input placeholder="Buscar tueste, lote o perfil…" value={search} onChange={(event) => { setSearch(event.target.value); setCurrentPage(1); }} /></label><select className="input status-filter" value={status} onChange={(event) => { setStatus(event.target.value); setCurrentPage(1); }}><option>Todos</option><option>Completado</option><option>Programado</option></select></div>
-      <div className="table-scroll"><table className="history-table"><thead><tr><th>Tueste</th><th>Fecha</th><th>Lote</th><th>Perfil</th><th>Entrada</th><th>Salida</th><th>Duración</th><th>Estado</th><th>Curva</th></tr></thead>
-        <tbody>{remoteLoading&&<tr><td colSpan="9">Cargando historial…</td></tr>}{!remoteLoading&&visibleRoasts.map((roast) => <tr key={roast.id}><td><b>{roast.name}</b></td><td>{roast.date}</td><td>{roast.lot}</td><td>{roast.profile || '—'}</td><td>{roast.input} kg</td><td>{roast.output} kg</td><td>{roast.duration} min</td><td><span className="status status-done">{roast.status}</span></td><td><button className="curve-link" type="button" disabled={!roast.measurements?.length} onClick={() => setSelectedRoast(roast)}>{roast.measurements?.length ? 'Ver curva' : 'Sin lecturas'}</button></td></tr>)}
-          {!remoteLoading&&!visibleRoasts.length && <tr><td colSpan="9"><EmptyState title="No hay tuestes" detail="Ajusta los filtros o registra una tanda nueva." /></td></tr>}
+      <div className="table-scroll"><table className="history-table"><thead><tr><th>Tueste</th><th>Fecha</th>{canManageProfiles && <th>Registrado por</th>}<th>Lote</th><th>Perfil</th><th>Entrada</th><th>Salida</th><th>Duración</th><th>Estado</th><th>Curva</th></tr></thead>
+        <tbody>{remoteLoading&&<tr><td colSpan={canManageProfiles ? 10 : 9}>Cargando historial…</td></tr>}{!remoteLoading&&visibleRoasts.map((roast) => <tr key={roast.id}><td><b>{roast.name}</b></td><td>{roast.date}</td>{canManageProfiles && <td>{roast.registeredBy || '—'}</td>}<td>{roast.lot}</td><td>{roast.profile || '—'}</td><td>{roast.input} kg</td><td>{roast.output} kg</td><td>{roast.duration} min</td><td><span className="status status-done">{roast.status}</span></td><td><button className="curve-link" type="button" disabled={!roast.measurements?.length} onClick={() => setSelectedRoast(roast)}>{roast.measurements?.length ? 'Ver curva' : 'Sin lecturas'}</button></td></tr>)}
+          {!remoteLoading&&!visibleRoasts.length && <tr><td colSpan={canManageProfiles ? 10 : 9}><EmptyState title="No hay tuestes" detail="Ajusta los filtros o registra una tanda nueva." /></td></tr>}
         </tbody>
       </table></div>
       <div className="table-footer"><span>Página {currentPage} de {API_MODE?Math.max(1,remotePageInfo.totalPages):pageCount}</span><div><button className="button button-outline button-small" disabled={currentPage <= 1||remoteLoading} onClick={() => setCurrentPage(currentPage - 1)}>Anterior</button><button className="button button-outline button-small" disabled={currentPage >= (API_MODE?Math.max(1,remotePageInfo.totalPages):pageCount)||remoteLoading} onClick={() => setCurrentPage(currentPage + 1)}>Siguiente</button></div></div>

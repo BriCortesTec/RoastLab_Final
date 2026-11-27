@@ -71,7 +71,7 @@ export default function Cafes({ items, onSave, notify, user }) {
   const canManage = ['admin', 'gerente'].includes(user?.role);
 
   if (!API_MODE) {
-    return <CatalogPage kind="cafes" items={items} onSave={onSave} notify={notify} />;
+    return <CatalogPage kind="cafes" items={items} onSave={onSave} notify={notify} canManage={canManage} />;
   }
 
   return (

@@ -6,8 +6,8 @@ export const ROLE_NAMES = {
 
 export const NAVIGATION = {
   admin: ['dashboard', 'cafes', 'lots', 'profiles', 'roasts', 'history', 'reports', 'users', 'account'],
-  gerente: ['dashboard', 'cafes', 'lots', 'profiles', 'roasts', 'history', 'reports', 'users', 'account'],
-  tostador: ['dashboard', 'lots', 'profiles', 'roasts', 'history', 'account'],
+  gerente: ['dashboard', 'cafes', 'lots', 'profiles', 'history', 'reports', 'users', 'account'],
+  tostador: ['dashboard', 'cafes', 'lots', 'profiles', 'roasts', 'history', 'account'],
 };
 
 export const PAGE_LABELS = {

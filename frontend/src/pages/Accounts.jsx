@@ -45,9 +45,23 @@ export default function Accounts({ personal, user, onProfile, notify }) {
   async function save(event) {
     event.preventDefault();
     if (busy) return;
-    setBusy(true);
+    const invalid = {};
+    if (!form.name.trim()) invalid.name = 'Escribe el nombre.';
+    if (!form.surname.trim()) invalid.surname = 'Escribe el apellido.';
+    if (!personal && !form.id && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      invalid.email = 'Escribe un correo electrónico válido.';
+    }
+    if (form.phone.trim() && !/^\+?[0-9]{10,15}$/.test(form.phone.trim())) {
+      invalid.phone = 'Usa de 10 a 15 dígitos, con + opcional al inicio.';
+    }
+    if (!personal && (!form.id || form.password) &&
+        !/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(form.password)) {
+      invalid.password = 'Usa 8 caracteres o más, una mayúscula, un número y un símbolo.';
+    }
     setFailure('');
-    setErrors({});
+    setErrors(invalid);
+    if (Object.keys(invalid).length) return;
+    setBusy(true);
     try {
       const details = {name: form.name.trim(), surname: form.surname.trim(), phone: form.phone.trim() || null};
       if (personal) {
@@ -86,8 +100,8 @@ export default function Accounts({ personal, user, onProfile, notify }) {
     <form className="modal-fields" noValidate onSubmit={save}>
       {fields.filter(([key]) => !personal || key !== 'password').map(([key, label, type, max]) =>
         <label className="field" key={key}>
-          {label}{key === 'password' && form.id ? ' nueva (opcional)' : ''}
-          <input className="input" type={type} maxLength={max} autoComplete={key === 'password' ? 'new-password' : undefined}
+          {label}{key === 'phone' ? ' (opcional)' : ''}{key === 'password' && form.id ? ' nueva (opcional)' : ''}
+          <input className="input" type={type} maxLength={max} name={key} autoComplete={{name: 'given-name', surname: 'family-name', email: 'email', phone: 'tel', password: 'new-password'}[key]}
             readOnly={key === 'email' && (personal || Boolean(form.id))}
             value={form[key] || ''} aria-invalid={Boolean(errors[key])}
             onChange={e => setForm({...form, [key]: e.target.value})}/>
