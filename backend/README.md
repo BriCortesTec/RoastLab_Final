@@ -22,19 +22,9 @@ Aplicación web full stack para **gestionar tuestes de café**: catálogo de caf
 | Pruebas de API | Bruno (carpeta `bruno/` versionada) |
 | Despliegue | VPS Ubuntu, systemd, Nginx, Let's Encrypt (Certbot) |
 
-## Usuarios de prueba
+## Cuentas y evaluación
 
-Contraseña de **todos** los usuarios de prueba: `RoastLab#2026`
-
-| Rol | Correo | Qué puede hacer |
-|---|---|---|
-| **Administrador** (credenciales fijas de evaluación) | `admin@roastlab.site` | Todo: gestión de usuarios, CRUD de todos los módulos, bitácora de notificaciones |
-| **Gerente** | `gerente@roastlab.site` | CRUD de cafés, lotes y perfiles; consulta de todos los tuestes y reportes |
-| **Tostador** (cliente) | `tostador@roastlab.site` | Solo lectura de catálogos; registra y consulta **únicamente sus propios** tuestes |
-
-Hay 12 usuarios en total (1 administrador, 2 gerentes y 9 tostadores). Los registros nuevos creados desde la pantalla de registro son siempre **tostador**.
-
-Requisitos de contraseña (validados en el frontend bajo el input y en el backend con Bean Validation): mínimo 8 caracteres, una mayúscula, un número y un carácter especial.
+Flyway crea el esquema y los roles. En una instalación nueva, sigue el apartado **Primer acceso y cuentas de evaluación** de [la guía del VPS](deploy/DEPLOY.md). El primer administrador se crea desde la consola del servidor. Desde **Usuarios** puede crear cuentas, asignar roles, editarlas y desactivarlas. Gerencia puede crear tostadores. Cada persona inicia sesión con su propio correo y contraseña. El SQL de ejemplo de la carpeta database corresponde a un conjunto de datos independiente.
 
 ## Diagrama entidad-relación
 
@@ -174,7 +164,7 @@ cp application.properties.example application-local.properties
 #    edita application-local.properties: password de MySQL y app.jwt.secret
 #    (genera el secreto con:  openssl rand -base64 48)
 
-# 3. Backend (Flyway crea las tablas y los datos de prueba al arrancar)
+# 3. Backend (Flyway crea las tablas y los roles al arrancar)
 cd ../../..
 ./mvnw spring-boot:run            # http://localhost:8080/api
 
@@ -187,12 +177,12 @@ npm run dev                       # http://localhost:5173
 
 ## API (resumen)
 
-Todas las rutas, excepto login, registro y recuperación de contraseña, requieren `Authorization: Bearer <token>`.
+Todas las rutas, excepto login y recuperación de contraseña, requieren `Authorization: Bearer <token>`.
 
 | Recurso | Endpoints | ADMIN | GERENTE | TOSTADOR |
 |---|---|:-:|:-:|:-:|
-| Auth | `POST /api/auth/login · registro · logout · forgot-password · reset-password`, `GET/PUT /api/auth/me` | ✔ | ✔ | ✔ |
-| Usuarios | `GET/POST/PUT/DELETE /api/usuarios` | ✔ | – | – |
+| Auth | `POST /api/auth/login · logout · forgot-password · reset-password`, `GET/PUT /api/auth/me` | ✔ | ✔ | ✔ |
+| Usuarios | `GET/POST/PUT/DELETE /api/usuarios` | ✔ | alta de tostadores | – |
 | Cafés, lotes, perfiles | `GET/POST/PUT/DELETE /api/cafes · lotes · perfiles` | CRUD | CRUD | lectura |
 | Tuestes | `GET/POST/PUT/DELETE /api/tuestes` | todos | lectura de todos | CRUD de los suyos |
 | Reportes | `GET /api/reportes/resumen` | ✔ | ✔ | los suyos |

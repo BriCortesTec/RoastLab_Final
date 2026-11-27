@@ -11,4 +11,4 @@ ALTER USER 'roastlab'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
 GRANT ALL PRIVILEGES ON roastlab_final.* TO 'roastlab'@'localhost';
 FLUSH PRIVILEGES;
 SQL
-echo "Base roastlab_final lista. Flyway creara las tablas y los datos de prueba al arrancar el backend."
+echo "Base roastlab_final lista. Flyway creara las tablas y los roles al arrancar el backend."

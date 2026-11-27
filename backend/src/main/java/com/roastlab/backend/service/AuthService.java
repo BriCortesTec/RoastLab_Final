@@ -2,13 +2,11 @@ package com.roastlab.backend.service;
 
 import com.roastlab.backend.dto.*;
 import com.roastlab.backend.entity.PasswordResetToken;
-import com.roastlab.backend.entity.Rol;
 import com.roastlab.backend.entity.TokenRevocado;
 import com.roastlab.backend.entity.Usuario;
 import com.roastlab.backend.exception.BusinessException;
 import com.roastlab.backend.exception.NotFoundException;
 import com.roastlab.backend.repository.PasswordResetTokenRepository;
-import com.roastlab.backend.repository.RolRepository;
 import com.roastlab.backend.repository.TokenRevocadoRepository;
 import com.roastlab.backend.repository.UsuarioRepository;
 import com.roastlab.backend.security.Roles;
@@ -28,7 +26,6 @@ import java.util.UUID;
 public class AuthService {
 
     private final UsuarioRepository usuarioRepository;
-    private final RolRepository rolRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
@@ -39,7 +36,6 @@ public class AuthService {
 
     public AuthService(
             UsuarioRepository usuarioRepository,
-            RolRepository rolRepository,
             PasswordEncoder passwordEncoder,
             AuthenticationManager authenticationManager,
             JwtService jwtService,
@@ -48,7 +44,6 @@ public class AuthService {
             MailService mailService,
             @Value("${app.frontend-url}") String frontendUrl) {
         this.usuarioRepository = usuarioRepository;
-        this.rolRepository = rolRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
@@ -69,34 +64,6 @@ public class AuthService {
 
         Usuario usuario = usuarioRepository.findByCorreo(correo)
                 .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
-
-        return new AuthResponseDTO(jwtService.generarToken(usuario.getCorreo()), aDTO(usuario));
-    }
-
-    @Transactional
-    public AuthResponseDTO registrar(RegistroUsuarioDTO dto) {
-        String correo = dto.email().trim().toLowerCase();
-
-        if (usuarioRepository.existsByCorreo(correo)) {
-            throw new BusinessException("email", "Ya existe una cuenta con ese correo.");
-        }
-
-        Rol rol = rolRepository.findByNombre("tostador")
-                .orElseThrow(() -> new NotFoundException("No existe el rol tostador"));
-
-        Usuario usuario = new Usuario();
-        usuario.setNombre(dto.name().trim());
-        usuario.setApellido(dto.surname().trim());
-        usuario.setCorreo(correo);
-        usuario.setTelefono(dto.phone());
-        usuario.setPasswordHash(passwordEncoder.encode(dto.password()));
-        usuario.setRol(rol);
-        usuario.setActivo(true);
-
-        usuario = usuarioRepository.save(usuario);
-
-        mailService.enviar(usuario, "Bienvenido a RoastLab",
-                "Hola " + usuario.getNombre() + ", tu cuenta de RoastLab fue creada correctamente.");
 
         return new AuthResponseDTO(jwtService.generarToken(usuario.getCorreo()), aDTO(usuario));
     }

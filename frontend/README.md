@@ -15,7 +15,7 @@ Abre la dirección local que muestre Vite, normalmente `http://localhost:5173/`.
 
 ## Qué incluye
 
-- Inicio de sesión y registro con validación de campos.
+- Inicio de sesión y alta interna de usuarios con validación de campos.
 - Paneles de inicio con navegación por rol (administración, gerencia y tostador).
 - Catálogos de cafés, lotes y perfiles con búsqueda, paginación, alta, edición y eliminación.
 - Registro de tuestes con cronómetro, lecturas manuales y curva que se actualiza al agregar cada temperatura.
@@ -54,7 +54,7 @@ src/
 ├── assets/                 # imágenes
 └── styles/
     ├── global.css          # tipografía, colores, botones y reglas compartidas
-    ├── auth.css            # login y registro
+    ├── auth.css            # inicio de sesión
     ├── layout.css          # menú lateral y barra superior
     ├── dashboard.css       # panel de inicio
     ├── catalogs.css        # tablas, búsqueda y formularios de catálogo
@@ -67,21 +67,9 @@ El recorrido es `main.jsx` → `App.jsx` → la pantalla de `pages` que correspo
 
 `main.jsx` importa `global.css`. Cada página o componente importa su hoja de estilos específica; por eso puedes trabajar en `auth.css` para cambiar el login sin buscar esas reglas entre los estilos del dashboard.
 
-## Modo de demostración
+## Conexión y acceso
 
-Si `VITE_API_URL` no está configurada, abre **Registrar tueste**, completa los datos y prepara el registro. Escribe una lectura y pulsa **Registrar temperatura** para añadir puntos a la curva. El modo demo usa los datos de ejemplo y guarda los cambios en este navegador; no requiere un termómetro ni conexión con el backend.
-
-## Conectar con el backend
-
-El backend expone rutas REST. Para usarlas en desarrollo, copia `.env.example` como `.env` y deja esta URL:
-
-```env
-VITE_API_URL=http://localhost:8080/api
-```
-
-Reinicia Vite después de crear o modificar `.env`. En modo API, el frontend usa login/registro y conecta cafés, lotes, perfiles, tuestes, historial y reportes; las listas se buscan y paginan en el servidor. Las operaciones de catálogo requieren un usuario con rol administrador o gerente. El tostador puede consultar catálogos y registrar sus propios tuestes.
-
-Si la variable no existe, el frontend entra al modo demo y guarda cambios en `localStorage`. El cliente Axios de `src/services/api.js` agrega el JWT a las peticiones protegidas y muestra errores del servidor.
+Vite usa `http://localhost:8080/api` en desarrollo y `/api` al compilar para producción. Puedes indicar otra dirección con `VITE_API_URL`. El backend autentica cada cuenta y devuelve su rol. En **Mi perfil** se consultan y actualizan los datos personales. En **Usuarios**, administración gestiona las cuentas y gerencia puede crear tostadores.
 
 Para compilar la versión de entrega:
 

@@ -322,3 +322,13 @@
 .profile-reference-data span { min-width: 0; }
 .row-actions button { white-space: nowrap; }
 @media (max-width: 600px) { .profile-reference-data { grid-template-columns: 1fr; } }
+
+.confirm-dialog {
+  width: min(28rem, 90vw);
+  padding: 1.5rem;
+  border: 1px solid #d1dacf;
+  border-radius: 1rem;
+  color: #234634;
+}
+.confirm-dialog::backdrop { background: rgb(20 35 26 / 55%); }
+.field small[role="alert"] { color: #a23122; }

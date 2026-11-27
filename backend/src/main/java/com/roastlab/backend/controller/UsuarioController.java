@@ -9,7 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-/** Gestión de usuarios: solo ADMIN (también restringido en SecurityConfig). */
+/** Administración de cuentas y alta delegada de tostadores. */
 @RestController
 @RequestMapping("/api/usuarios")
 @PreAuthorize("hasRole('ADMIN')")
@@ -33,9 +33,13 @@ public class UsuarioController {
         return usuarioService.obtener(id);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UsuarioDTO crear(@Valid @RequestBody UsuarioCrearDTO dto) {
+    public UsuarioDTO crear(@AuthenticationPrincipal AuthenticatedUser actor, @Valid @RequestBody UsuarioCrearDTO dto) {
+        if (!actor.isAdmin() && !"tostador".equalsIgnoreCase(dto.role())) {
+            throw new org.springframework.security.access.AccessDeniedException("Gerencia solo puede crear tostadores.");
+        }
         return usuarioService.crear(dto);
     }
 

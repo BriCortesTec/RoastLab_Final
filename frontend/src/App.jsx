@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { INITIAL_DATA } from './data/demoData.js';
 import { NAVIGATION, PAGE_LABELS, ROLE_NAMES } from './data/navigation.js';
 import Login from './pages/Login.jsx';
@@ -12,12 +12,8 @@ import Reports from './pages/Reports.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import Topbar from './components/Topbar.jsx';
 import Toast from './components/Toast.jsx';
-import { resourceService } from './services/api.js';
-
-function readUser() {
-  try { return JSON.parse(sessionStorage.getItem('roastlab_user')); }
-  catch { return null; }
-}
+import Accounts from './pages/Accounts.jsx';
+import { resourceService, authService } from './services/api.js';
 
 function readData() {
   try { return { ...INITIAL_DATA, ...JSON.parse(localStorage.getItem('roastlab_data')) }; }
@@ -25,7 +21,16 @@ function readData() {
 }
 
 export default function App() {
-  const [user, setUser] = useState(readUser);
+  const [user, setUser] = useState(null);
+  const [checking, setChecking] = useState(Boolean(localStorage.getItem('roastlab_token')));
+  useEffect(() => {
+    if (!localStorage.getItem('roastlab_token')) return;
+    let current = true;
+    authService.me().then(account => { if (current) setUser(account); })
+      .catch(error => { if (current && error.status === 401) localStorage.removeItem('roastlab_token'); })
+      .finally(() => { if (current) setChecking(false); });
+    return () => { current = false; };
+  }, []);
   const [page, setPage] = useState('dashboard');
   const [data, setData] = useState(readData);
   const [toastMessage, setToastMessage] = useState('');
@@ -43,24 +48,19 @@ export default function App() {
     localStorage.setItem('roastlab_data', JSON.stringify(updatedData));
   };
 
-  const restoreDemoData = () => {
-    if (!window.confirm('Esto reemplazará los datos guardados en este navegador por los ejemplos de RoastLab. ¿Continuar?')) return;
-    const demoData = JSON.parse(JSON.stringify(INITIAL_DATA));
-    saveData(demoData);
+  const signIn = (account) => {
+    setUser(account);
     setPage('dashboard');
-    setMobileMenuOpen(false);
-    notify('Datos de demostración restaurados.');
   };
 
-  const signIn = (newUser) => {
-    setUser(newUser);
-    sessionStorage.setItem('roastlab_user', JSON.stringify(newUser));
-  };
-
-  const signOut = () => {
-    setUser(null);
-    sessionStorage.removeItem('roastlab_user');
-    localStorage.removeItem('roastlab_token');
+  const signOut = async () => {
+    try { await authService.logout(); }
+    catch { /* Cierra la sesión local incluso si se perdió la conexión. */ }
+    finally {
+      localStorage.removeItem('roastlab_token');
+      sessionStorage.removeItem('roastlab_user');
+      setUser(null);
+    }
   };
 
   const navigate = (nextPage) => {
@@ -76,6 +76,7 @@ export default function App() {
     setSidebarCollapsed((collapsed) => !collapsed);
   };
 
+  if (checking) return <p role="status">Verificando sesión…</p>;
   if (!user) return <Login onLogin={signIn} />;
 
   const allowedPages = NAVIGATION[user.role] || NAVIGATION.tostador;
@@ -83,7 +84,9 @@ export default function App() {
   const pageTitle = PAGE_LABELS[activePage];
   let pageContent;
 
-  if (activePage === 'dashboard') {
+  if (activePage === 'users' || activePage === 'account') {
+    pageContent = <Accounts key={activePage} personal={activePage === 'account'} user={user} onProfile={setUser} notify={notify} />;
+  } else if (activePage === 'dashboard') {
     pageContent = <Dashboard user={user} data={data} navigate={navigate} />;
   } else if (activePage === 'cafes') {
     pageContent = <Cafes items={data.cafes} onSave={(cafes) => saveData({ ...data, cafes })} notify={notify} user={user} />;
@@ -157,7 +160,6 @@ export default function App() {
           <div><span className="eyebrow">ROASTLAB · {(ROLE_NAMES[user.role] || ROLE_NAMES.tostador).toUpperCase()}</span><h1>{pageTitle}</h1></div>
           {activePage === 'dashboard' && <div className="today-chip"><span>☀</span> {new Intl.DateTimeFormat('es-MX', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())}</div>}
         </div>
-        <div className="demo-banner"><span>ℹ</span><span>{demoMode?'Esta versión de demostración guarda cambios en este navegador.':'Esta vista está conectada a la API.'}</span>{demoMode&&<button type="button" onClick={restoreDemoData}>Restaurar datos demo</button>}</div>
         {pageContent}
       </div>
     </main>

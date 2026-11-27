@@ -4,7 +4,6 @@ import com.roastlab.backend.dto.*;
 import com.roastlab.backend.security.AuthenticatedUser;
 import com.roastlab.backend.service.AuthService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,12 +19,6 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponseDTO login(@Valid @RequestBody LoginDTO dto) {
         return authService.login(dto);
-    }
-
-    @PostMapping("/registro")
-    @ResponseStatus(HttpStatus.CREATED)
-    public AuthResponseDTO registro(@Valid @RequestBody RegistroUsuarioDTO dto) {
-        return authService.registrar(dto);
     }
 
     @PostMapping("/logout")

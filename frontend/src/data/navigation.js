@@ -5,9 +5,9 @@ export const ROLE_NAMES = {
 };
 
 export const NAVIGATION = {
-  admin: ['dashboard', 'cafes', 'lots', 'profiles', 'roasts', 'history', 'reports'],
-  gerente: ['dashboard', 'cafes', 'lots', 'profiles', 'roasts', 'history', 'reports'],
-  tostador: ['dashboard', 'lots', 'profiles', 'roasts', 'history'],
+  admin: ['dashboard', 'cafes', 'lots', 'profiles', 'roasts', 'history', 'reports', 'users', 'account'],
+  gerente: ['dashboard', 'cafes', 'lots', 'profiles', 'roasts', 'history', 'reports', 'users', 'account'],
+  tostador: ['dashboard', 'lots', 'profiles', 'roasts', 'history', 'account'],
 };
 
 export const PAGE_LABELS = {
@@ -18,4 +18,6 @@ export const PAGE_LABELS = {
   roasts: 'Registrar tueste',
   history: 'Historial',
   reports: 'Reportes',
+  users: 'Usuarios',
+  account: 'Mi perfil',
 };

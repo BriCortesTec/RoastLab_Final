@@ -1,45 +1,26 @@
-import Modal from './Modal.jsx';
+import { useEffect, useRef } from 'react';
 
-/**
- * Diálogo de confirmación reutilizable.
- * Props:
- *  - isOpen (boolean)
- *  - title (string)
- *  - message (string | node)
- *  - confirmText (string), por defecto "Confirmar"
- *  - cancelText (string), por defecto "Cancelar"
- *  - variant ('primary' | 'danger'), por defecto 'primary'
- *  - loading (boolean): deshabilita los botones mientras se procesa
- *  - onConfirm()
- *  - onCancel()
- */
 export default function ConfirmDialog({
-  isOpen,
-  title,
-  message,
-  confirmText = 'Confirmar',
-  cancelText = 'Cancelar',
-  variant = 'primary',
-  loading = false,
-  onConfirm,
-  onCancel,
+  isOpen = true, title, message, confirmText = 'Confirmar', cancelText = 'Cancelar',
+  variant = 'primary', loading = false, onCancel, onConfirm,
 }) {
-  return (
-    <Modal isOpen={isOpen} title={title} onClose={loading ? () => {} : onCancel} size="sm">
-      <div className="confirm-message">{message}</div>
-      <div className="modal-actions">
-        <button type="button" className="btn btn-outline" onClick={onCancel} disabled={loading}>
-          {cancelText}
-        </button>
-        <button
-          type="button"
-          className={`btn ${variant === 'danger' ? 'btn-danger' : 'btn-primary'}`}
-          onClick={onConfirm}
-          disabled={loading}
-        >
-          {loading ? 'Procesando...' : confirmText}
-        </button>
-      </div>
-    </Modal>
-  );
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!isOpen) return;
+    const dialog = ref.current;
+    dialog.showModal();
+    return () => dialog.close();
+  }, [isOpen]);
+  if (!isOpen) return null;
+  return <dialog className="confirm-dialog" ref={ref} aria-label={title}
+    onCancel={event => { event.preventDefault(); if (!loading) onCancel(); }}>
+    <h3>{title}</h3>
+    {message && <p>{message}</p>}
+    <div className="modal-actions">
+      <button type="button" disabled={loading} autoFocus className="button button-outline" onClick={onCancel}>{cancelText}</button>
+      <button type="button" disabled={loading} className={`button button-primary ${variant === 'danger' ? 'btn-danger' : ''}`} onClick={onConfirm}>
+        {loading ? 'Procesando…' : confirmText}
+      </button>
+    </div>
+  </dialog>;
 }

@@ -1,3 +1,5 @@
+import useFormErrors from '../hooks/useFormErrors.js';
+import ConfirmDialog from '../components/ConfirmDialog.jsx';
 import { useEffect, useState } from 'react';
 import Icon from '../components/Icon.jsx';
 import TemperatureChart from '../components/TemperatureChart.jsx';
@@ -106,7 +108,7 @@ export default function RoastForm({ data, onSave, profileCaptureMode = false }) 
   const [adjustmentValue, setAdjustmentValue] = useState('');
   const [adjustmentUnit, setAdjustmentUnit] = useState('%');
   const [completedProfileAdjustments, setCompletedProfileAdjustments] = useState([]);
-  const [error, setError] = useState('');
+  const {error, fields, setError, fromServer} = useFormErrors();
   const started = phase !== 'setup';
 
   useEffect(() => {
@@ -172,11 +174,11 @@ export default function RoastForm({ data, onSave, profileCaptureMode = false }) 
 
   const beginRoast = () => {
     setError('');
-    if (form.name.trim().length < 3) return setError('Escribe un nombre de al menos 3 caracteres.');
-    if (!form.date) return setError('Selecciona la fecha del tueste.');
-    if (!selectedLot) return setError('Selecciona el lote que vas a tostar.');
-    if (Number(form.input) <= 0) return setError('El peso de entrada debe ser mayor a cero.');
-    if (!profileCaptureMode && Number(form.input) > Number(selectedLot.weight)) return setError(`El lote solo tiene ${selectedLot.weight} kg disponibles.`);
+    if (form.name.trim().length < 3) return setError('Escribe un nombre de al menos 3 caracteres.', 'name');
+    if (!form.date) return setError('Selecciona la fecha del tueste.', 'date');
+    if (!selectedLot) return setError('Selecciona el lote que vas a tostar.', 'lotCode');
+    if (Number(form.input) <= 0) return setError('El peso de entrada debe ser mayor a cero.', 'input');
+    if (!profileCaptureMode && Number(form.input) > Number(selectedLot.weight)) return setError(`El lote solo tiene ${selectedLot.weight} kg disponibles.`, 'input');
     setMeasurements([]);
     setEvents([]);
     setAdjustments([]);
@@ -191,7 +193,7 @@ export default function RoastForm({ data, onSave, profileCaptureMode = false }) 
   const saveReading = (eventType = null) => {
     const value = Number(temperature);
     if (!Number.isFinite(value) || value < 0 || value > 300) {
-      setError('Ingresa una temperatura válida entre 0 y 300 °C.');
+      setError('Ingresa una temperatura válida entre 0 y 300 °C.', 'temperature');
       return;
     }
 
@@ -240,7 +242,7 @@ export default function RoastForm({ data, onSave, profileCaptureMode = false }) 
 
   const markEvent = (type) => {
     setError('');
-    if (temperature === '') return setError('Escribe la temperatura antes de registrar este hito.');
+    if (temperature === '') return setError('Escribe la temperatura antes de registrar este hito.', 'temperature');
     if (events.some((savedEvent) => savedEvent.type === type)) return setError('Este hito ya fue registrado.');
     if (type === 'drop' && measurements.length < 2) return setError('Registra al menos dos temperaturas antes de la caída.');
     saveReading(type);
@@ -248,7 +250,7 @@ export default function RoastForm({ data, onSave, profileCaptureMode = false }) 
 
   const recordAdjustment = () => {
     if (!events.some((event) => event.type === 'charge') || startedAt === null) return setError('Registra primero la temperatura de carga.');
-    if (!adjustmentValue.trim() || !Number.isFinite(Number(adjustmentValue))) return setError('Escribe un valor numérico para el ajuste.');
+    if (!adjustmentValue.trim() || !Number.isFinite(Number(adjustmentValue))) return setError('Escribe un valor numérico para el ajuste.', 'adjustmentValue');
     const control = MACHINE_CONTROLS.find(([type]) => type === adjustmentType);
     const capturedAt = Date.now();
     setAdjustments((current) => [...current, {
@@ -300,8 +302,8 @@ export default function RoastForm({ data, onSave, profileCaptureMode = false }) 
     if (measurements.length < 2) return setError('Registra al menos dos temperaturas para guardar la curva.');
     const inputWeight = Number(form.input);
     const outputWeight = Number(form.output);
-    if (outputWeight <= 0) return setError('Escribe el peso de salida.');
-    if (outputWeight > inputWeight) return setError('El peso de salida no puede superar el peso de entrada.');
+    if (outputWeight <= 0) return setError('Escribe el peso de salida.', 'output');
+    if (outputWeight > inputWeight) return setError('El peso de salida no puede superar el peso de entrada.', 'output');
     const requiredEvents = ['charge', 'tp', 'dry_end', 'fc_start', 'drop'];
     if (requiredEvents.some((type) => !events.some((event) => event.type === type))) return setError('Marca Charge, TP, Dry End, FCs y Drop antes de guardar.');
 
@@ -327,11 +329,12 @@ export default function RoastForm({ data, onSave, profileCaptureMode = false }) 
       profileId: selectedProfile?.id ?? null,
       status: 'Completado',
     };
-    Promise.resolve(onSave(roast)).catch((saveError) => setError(saveError.message || 'No se pudo guardar el tueste.'));
+    Promise.resolve(onSave(roast)).catch((saveError) => fromServer(saveError, ['name','date','input','output','observations','lotCode']));
   };
 
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
   const discardRoast = () => {
-    if (!window.confirm('¿Descartar este registro y sus temperaturas?')) return;
+    setConfirmDiscard(false);
     setForm(emptyRoast());
     setStartedAt(null);
     setPhase('setup');
@@ -347,6 +350,7 @@ export default function RoastForm({ data, onSave, profileCaptureMode = false }) 
   };
 
   return <section className="panel roast-form">
+    {confirmDiscard && <ConfirmDialog title="¿Descartar este tueste y sus lecturas?" confirmText="Descartar" onConfirm={discardRoast} onCancel={() => setConfirmDiscard(false)}/>}
     {profileCaptureMode && <div className="profile-capture-banner" role="status"><b>Creando un perfil de tueste en vivo</b><span>Este registro guardará una curva de referencia. No creará un tueste de producción ni descontará inventario.</span></div>}
     <div className="panel-head">
       <div><h3>{phase === 'setup' ? profileCaptureMode?'Preparar perfil en vivo':'Preparar nuevo tueste' : phase === 'recording' ? profileCaptureMode?'Construyendo perfil':'Tueste en curso' : profileCaptureMode?'Guardar perfil de referencia':'Guardar resultado del tueste'}</h3><p>{phase === 'setup' ? 'Completa los datos y comienza a capturar la curva.' : phase === 'recording' ? 'Registra las temperaturas conforme avanza la tanda.' : 'Confirma el peso final y agrega observaciones.'}</p></div>
@@ -356,12 +360,12 @@ export default function RoastForm({ data, onSave, profileCaptureMode = false }) 
     <div className="roast-section">
       <span className="form-section-title"><span>1</span> Datos del tueste</span>
       <div className="form-grid">
-        <label className="field field-wide">{profileCaptureMode?'Nombre del perfil':'Nombre del tueste'}<input className="input" name="name" value={form.name} onChange={updateField} placeholder={profileCaptureMode?'Ej. Perfil lavado medio':'Ej. Tueste de la mañana #025'} minLength="3" maxLength="100" disabled={started} required /></label>
-        {profileCaptureMode && <><label className="field">Nivel de tueste<select className="input" name="level" value={form.level} onChange={updateField} disabled={started}><option>Claro</option><option>Medio</option><option>Oscuro</option></select></label><label className="field field-wide">Descripción<input className="input" name="description" value={form.description} onChange={updateField} maxLength="500" disabled={started} placeholder="Qué quieres repetir de este perfil" /></label></>}
-        <label className="field">Fecha del tueste<input className="input" type="date" name="date" value={form.date} onChange={updateField} disabled={started} required /></label>
-        <label className="field">{profileCaptureMode?'Lote de referencia':'Lote de café'}<select className="input" name="lotCode" value={form.lotCode} onChange={updateField} disabled={started||optionsLoading} required><option value="">{optionsLoading?'Cargando lotes…':'Selecciona un lote…'}</option>{roastLots.map((lot) => <option key={lot.id} value={lot.code} disabled={!profileCaptureMode&&Number(lot.weight) <= 0}>{lot.code} · {lot.coffee} ({lot.weight} kg)</option>)}</select></label>
-        <label className="field">Perfil de tueste<select className="input" name="profile" value={profileCaptureMode?'':form.profile} onChange={updateField} disabled={profileCaptureMode||started||optionsLoading}><option value="">Sin perfil</option>{!profileCaptureMode&&roastProfiles.map((profile) => <option key={profile.id} value={profile.name}>{profile.name}{profile.measurements?.length ? ' · con curva' : ''}</option>)}</select></label>
-        <label className="field">Peso de entrada (kg)<input className="input" type="number" name="input" value={form.input} onChange={updateField} min="0.01" step="0.01" placeholder="8.00" disabled={started} required /></label>
+        <label className="field field-wide">{profileCaptureMode?'Nombre del perfil':'Nombre del tueste'}<input className="input" name="name" value={form.name} onChange={updateField} placeholder={profileCaptureMode?'Ej. Perfil lavado medio':'Ej. Tueste de la mañana #025'} minLength="3" maxLength="100" disabled={started} required />{fields.name && <small role="alert">{fields.name}</small>}</label>
+        {profileCaptureMode && <><label className="field">Nivel de tueste<select className="input" name="level" value={form.level} onChange={updateField} disabled={started}><option>Claro</option><option>Medio</option><option>Oscuro</option></select>{fields.level && <small role="alert">{fields.level}</small>}</label><label className="field field-wide">Descripción<input className="input" name="description" value={form.description} onChange={updateField} maxLength="500" disabled={started} placeholder="Qué quieres repetir de este perfil" />{fields.description && <small role="alert">{fields.description}</small>}</label></>}
+        <label className="field">Fecha del tueste<input className="input" type="date" name="date" value={form.date} onChange={updateField} disabled={started} required />{fields.date && <small role="alert">{fields.date}</small>}</label>
+        <label className="field">{profileCaptureMode?'Lote de referencia':'Lote de café'}<select className="input" name="lotCode" value={form.lotCode} onChange={updateField} disabled={started||optionsLoading} required><option value="">{optionsLoading?'Cargando lotes…':'Selecciona un lote…'}</option>{roastLots.map((lot) => <option key={lot.id} value={lot.code} disabled={!profileCaptureMode&&Number(lot.weight) <= 0}>{lot.code} · {lot.coffee} ({lot.weight} kg)</option>)}</select>{fields.lotCode && <small role="alert">{fields.lotCode}</small>}</label>
+        <label className="field">Perfil de tueste<select className="input" name="profile" value={profileCaptureMode?'':form.profile} onChange={updateField} disabled={profileCaptureMode||started||optionsLoading}><option value="">Sin perfil</option>{!profileCaptureMode&&roastProfiles.map((profile) => <option key={profile.id} value={profile.name}>{profile.name}{profile.measurements?.length ? ' · con curva' : ''}</option>)}</select>{fields.profile && <small role="alert">{fields.profile}</small>}</label>
+        <label className="field">Peso de entrada (kg)<input className="input" type="number" name="input" value={form.input} onChange={updateField} min="0.01" step="0.01" placeholder="8.00" disabled={started} required />{fields.input && <small role="alert">{fields.input}</small>}</label>
         {selectedLot && <span className="lot-available">{profileCaptureMode?'El lote se guarda solo como referencia; no se descuenta inventario.':<>Disponible en este lote: <b>{selectedLot.weight} kg</b></>}</span>}
       </div>
       {!started && <button className="button button-primary start-roast-button" type="button" onClick={beginRoast}><Icon name="flame" size={18} /> {profileCaptureMode?'Empezar a construir perfil':'Preparar registro de tueste'}</button>}
@@ -374,7 +378,7 @@ export default function RoastForm({ data, onSave, profileCaptureMode = false }) 
         <TemperatureChart points={measurements} events={events} elapsed={elapsed} referencePoints={selectedProfile?.measurements || []} referenceLabel={selectedProfile?.name || 'Perfil objetivo'} />
         {selectedProfile && !selectedProfile.measurements?.length && <div className="profile-reference-note">Este perfil aún no tiene una curva guardada. Puedes crear uno desde un tueste terminado en el historial.</div>}
         {phase === 'recording' && <form className="temperature-entry" onSubmit={registerTemperature}>
-          <label className="field">Temperatura actual (°C)<input className="input" type="number" min="0" max="300" step="0.1" value={temperature} onChange={updateTemperature} placeholder="Por ejemplo: 185.5" autoFocus /></label>
+          <label className="field">Temperatura actual (°C)<input className="input" type="number" min="0" max="300" step="0.1" value={temperature} onChange={updateTemperature} placeholder="Por ejemplo: 185.5" autoFocus />{fields.temperature && <small role="alert">{fields.temperature}</small>}</label>
           <button className="button button-primary" type="submit" disabled={!temperature}><Icon name="plus" size={17} /> Registrar temperatura</button>
           <div className="temperature-readings"><b>{measurements.length}</b><span>lecturas</span><small>Máxima: {maximumTemperature ? `${maximumTemperature} °C` : '—'}</small><small>ROR: {latestRor === null ? '—' : `${latestRor} °C/min`}</small></div>
         </form>}
@@ -390,26 +394,26 @@ export default function RoastForm({ data, onSave, profileCaptureMode = false }) 
         {phase === 'recording' && events.some((event) => event.type === 'charge') && <section className="machine-adjustment-panel"><div><h4>Ajustes de la máquina</h4><p>Haz el cambio en la tostadora y anótalo aquí para guardar el momento y el valor aplicado.</p></div>
           {selectedProfile && nextProfileAdjustment && <div className={`profile-action-alert ${profileAdjustmentIsDue ? 'profile-action-due' : ''}`}><div><small>{profileAdjustmentIsDue ? 'Es momento de revisar este ajuste' : `Próximo ajuste sugerido · en ${formatTime(Math.max(0, nextProfileAdjustment.adjustment.seconds - elapsed))}`}</small><b>{nextProfileAdjustment.adjustment.label}: {nextProfileAdjustment.adjustment.value}{nextProfileAdjustment.adjustment.unit ? ` ${nextProfileAdjustment.adjustment.unit}` : ''}</b><span>En el perfil se registró a las {formatTime(nextProfileAdjustment.adjustment.seconds)}{nextProfileAdjustment.adjustment.temperature !== null && nextProfileAdjustment.adjustment.temperature !== undefined ? ` · ${nextProfileAdjustment.adjustment.temperature} °C` : ''}.</span></div>{profileAdjustmentIsDue && <div className="profile-action-buttons"><button className="button button-primary" type="button" onClick={() => confirmProfileAdjustment(nextProfileAdjustment.adjustment, nextProfileAdjustment.index)}>Ya lo apliqué · registrar</button><button className="button button-outline" type="button" onClick={() => dismissProfileAdjustment(nextProfileAdjustment.adjustment, nextProfileAdjustment.index)}>Omitir / registrar otro</button></div>}</div>}
           {selectedProfile?.adjustments?.length > 0 && <div className="profile-adjustment-reference"><b>Ajustes de este perfil</b>{selectedProfile.adjustments.map((adjustment) => <span key={adjustment.id || `${adjustment.seconds}-${adjustment.type}`}>{formatTime(adjustment.seconds)} · {adjustment.label}: {adjustment.value}{adjustment.unit ? ` ${adjustment.unit}` : ''}</span>)}</div>}
-          <div className="machine-adjustment-entry"><label className="field">Control<select className="input" value={adjustmentType} onChange={(event) => {setAdjustmentType(event.target.value);setAdjustmentUnit(event.target.value==='drum'?'rpm':'%');}}>{MACHINE_CONTROLS.map(([type, label]) => <option key={type} value={type}>{label}</option>)}</select></label><label className="field">Nuevo valor<input className="input" type="number" step="any" value={adjustmentValue} onChange={(event) => setAdjustmentValue(event.target.value)} placeholder="Ej. 65" /></label><label className="field">Unidad<input className="input" value={adjustmentUnit} onChange={(event) => setAdjustmentUnit(event.target.value)} placeholder="%, rpm…" /></label><button className="button button-outline" type="button" onClick={recordAdjustment}>Registrar ajuste</button></div>
+          <div className="machine-adjustment-entry"><label className="field">Control<select className="input" value={adjustmentType} onChange={(event) => {setAdjustmentType(event.target.value);setAdjustmentUnit(event.target.value==='drum'?'rpm':'%');}}>{MACHINE_CONTROLS.map(([type, label]) => <option key={type} value={type}>{label}</option>)}</select>{fields.adjustmentType && <small role="alert">{fields.adjustmentType}</small>}</label><label className="field">Nuevo valor<input className="input" type="number" step="any" value={adjustmentValue} onChange={(event) => setAdjustmentValue(event.target.value)} placeholder="Ej. 65" />{fields.adjustmentValue && <small role="alert">{fields.adjustmentValue}</small>}</label><label className="field">Unidad<input className="input" value={adjustmentUnit} onChange={(event) => setAdjustmentUnit(event.target.value)} placeholder="%, rpm…" />{fields.adjustmentUnit && <small role="alert">{fields.adjustmentUnit}</small>}</label><button className="button button-outline" type="button" onClick={recordAdjustment}>Registrar ajuste</button></div>
           {adjustments.length > 0 ? <div className="machine-adjustment-list">{adjustments.map((adjustment) => <div key={adjustment.id}><b>{formatTime(adjustment.seconds)}</b><span>{adjustment.label}: {adjustment.value}{adjustment.unit ? ` ${adjustment.unit}` : ''}</span>{adjustment.temperature !== null && <small>{adjustment.temperature} °C</small>}</div>)}</div> : <span className="adjustment-empty">Aún no se registran cambios de máquina.</span>}
         </section>}
         {error && phase === 'recording' && <div className="error-note" role="alert">{error}</div>}
       </div>
 
-      {phase === 'recording' && <div className="roast-actions"><button className="button button-outline" type="button" onClick={discardRoast}>Descartar tueste</button><div className="drop-action"><button className="button button-drop" type="button" disabled={!canMarkEvent('drop') || temperature === '' || measurements.length < 2} onClick={() => markEvent('drop')}>Registrar caída y detener</button><span className="drop-help">Escribe la temperatura de descarga antes de registrar la caída.</span></div></div>}
+      {phase === 'recording' && <div className="roast-actions"><button className="button button-outline" type="button" onClick={() => setConfirmDiscard(true)}>Descartar tueste</button><div className="drop-action"><button className="button button-drop" type="button" disabled={!canMarkEvent('drop') || temperature === '' || measurements.length < 2} onClick={() => markEvent('drop')}>Registrar caída y detener</button><span className="drop-help">Escribe la temperatura de descarga antes de registrar la caída.</span></div></div>}
 
       {phase === 'finishing' && <>
         <div className="roast-section">
           <span className="form-section-title"><span>3</span> Resultado final</span>
           <div className="form-grid">
-            <label className="field">Peso final del café (kg)<input className="input" type="number" name="output" value={form.output} onChange={updateField} min="0.01" max={form.input || undefined} step="0.01" placeholder="6.72" required /></label>
-            <label className="field field-wide">Observaciones<textarea className="input textarea" name="observations" value={form.observations} onChange={updateField} rows="3" maxLength="500" placeholder="Aroma, color, notas del proceso…" /></label>
+            <label className="field">Peso final del café (kg)<input className="input" type="number" name="output" value={form.output} onChange={updateField} min="0.01" max={form.input || undefined} step="0.01" placeholder="6.72" required />{fields.output && <small role="alert">{fields.output}</small>}</label>
+            <label className="field field-wide">Observaciones<textarea className="input textarea" name="observations" value={form.observations} onChange={updateField} rows="3" maxLength="500" placeholder="Aroma, color, notas del proceso…" />{fields.observations && <small role="alert">{fields.observations}</small>}</label>
           </div>
           <div className="roast-finish-summary"><span>Duración <b>{(elapsed / 60).toFixed(1)} min</b></span><span>Lecturas <b>{measurements.length}</b></span><span>Temperatura máxima <b>{maximumTemperature || '—'}{maximumTemperature ? ' °C' : ''}</b></span></div>
           {adjustments.length > 0 && <div className="machine-adjustment-list machine-adjustment-readonly"><b>Ajustes registrados</b>{adjustments.map((adjustment) => <div key={adjustment.id}><b>{formatTime(adjustment.seconds)}</b><span>{adjustment.label}: {adjustment.value}{adjustment.unit ? ` ${adjustment.unit}` : ''}</span></div>)}</div>}
         </div>
         {error && <div className="error-note" role="alert">{error}</div>}
-        <div className="roast-actions"><button className="button button-outline" type="button" onClick={discardRoast}>Descartar tueste</button><button className="button button-primary" type="button" onClick={finishRoast}><Icon name="check" size={17} /> Confirmar guardado</button></div>
+        <div className="roast-actions"><button className="button button-outline" type="button" onClick={() => setConfirmDiscard(true)}>Descartar tueste</button><button className="button button-primary" type="button" onClick={finishRoast}><Icon name="check" size={17} /> Confirmar guardado</button></div>
       </>}
     </>}
 

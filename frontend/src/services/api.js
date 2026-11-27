@@ -16,12 +16,17 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use((response) => response, (error) => {
   if (axios.isCancel(error)) return Promise.reject(error);
   const message = error.response?.data?.message || error.message || 'No se pudo conectar con el servidor.';
-  return Promise.reject(new Error(message));
+  const failure = new Error(message);
+  failure.fieldErrors = error.response?.data?.fieldErrors || {};
+  failure.status = error.response?.status;
+  return Promise.reject(failure);
 });
 
 export const authService = {
   login: (credentials) => api.post('/auth/login', credentials).then((response) => response.data),
-  register: (details) => api.post('/auth/registro', details).then((response) => response.data),
+  me: () => api.get('/auth/me').then(response => response.data),
+  logout: () => api.post('/auth/logout'),
+  updateProfile: (fields) => api.put('/auth/me', fields).then(response => response.data),
 };
 
 export const resourceService = {

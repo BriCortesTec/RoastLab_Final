@@ -93,23 +93,15 @@ export default function Sidebar({
 
         {/* Sección inferior */}
         <div className="sidebar-bottom">
-          <div className="side-help">
-            <div className="help-mark">?</div>
-            <b>¿Necesitas ayuda?</b>
-            <p>Aprende a sacar el mejor provecho de RoastLab.</p>
-            <button onClick={() => window.alert('Pronto encontrarás aquí la guía de RoastLab.')}>
-              Ver guía <Icon name="arrow" size={15} />
-            </button>
-          </div>
-
-          <button className="user-card" onClick={onLogout}>
+          <button className="user-card" aria-label="Abrir mi perfil" onClick={() => onNavigate('account')}>
             <span className="avatar">{userInitial}</span>
             <span className="user-meta">
               <b>{userFullName}</b>
+              <small>{user.email}</small>
               <small>{userRoleLabel}</small>
             </span>
-            <Icon name="logout" size={17} />
           </button>
+          <button className="nav-item" aria-label="Cerrar sesión" onClick={onLogout}><Icon name="logout" size={17}/><span>Cerrar sesión</span></button>
         </div>
       </aside>
     </>
