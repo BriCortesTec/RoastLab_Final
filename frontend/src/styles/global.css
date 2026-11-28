@@ -99,6 +99,13 @@ h3 {
   background: var(--green);
 }
 
+.brand-monogram {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -.08em;
+}
+
 .brand-light {
   color: #fff;
 }

@@ -78,7 +78,7 @@ export default function Dashboard({ user, data, navigate }) {
         <div>
           <span className="eyebrow">PANEL DE CONTROL</span>
           <h2>
-            Buenos días, {user.name} <span>☕</span>
+            Buenos días, {user.name}
           </h2>
           <p>Todo listo para preparar un gran día de tueste.</p>
           {pages.includes('roasts') && <button className="button button-white" onClick={() => navigate('roasts')}>
@@ -88,11 +88,9 @@ export default function Dashboard({ user, data, navigate }) {
 
         <div className="welcome-art">
           <div className="sun-disc" />
-          <div className="coffee-cup">
-            <Icon name="coffee" size={57} />
+          <div className="bean-art" aria-hidden="true">
+            <Icon name="bean" size={72} />
           </div>
-          <span className="steam steam-one" />
-          <span className="steam steam-two" />
         </div>
       </section>
 

@@ -61,9 +61,7 @@ export default function Login({ onLogin }) {
       <section className="auth-photo">
         <div className="photo-shade" />
         <div className="brand brand-light">
-          <span className="brand-icon">
-            <Icon name="bean" size={28} />
-          </span>
+          <span className="brand-icon brand-monogram" aria-hidden="true">R</span>
           <span>
             Roast<span className="brand-highlight">Lab</span>
           </span>
@@ -87,15 +85,12 @@ export default function Login({ onLogin }) {
       <section className="auth-panel">
         <div className="auth-card">
           <div className="brand brand-mobile">
-            <span className="brand-icon">
-              <Icon name="bean" size={26} />
-            </span>
+            <span className="brand-icon brand-monogram" aria-hidden="true">R</span>
             <span>
               Roast<span className="brand-highlight">Lab</span>
             </span>
           </div>
 
-          <span className="eyebrow">BIENVENIDA A ROASTLAB</span>
           <h2>Iniciar sesión</h2>
           <p className="muted">{recover ? 'Te enviaremos un enlace si el correo está registrado.' : 'Entra con la cuenta que te asignó tu equipo.'}</p>
 

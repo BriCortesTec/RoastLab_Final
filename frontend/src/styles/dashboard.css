@@ -63,46 +63,18 @@
   background: linear-gradient(135deg,#c8a265,#e3c992);
 }
 
-.coffee-cup {
+.bean-art {
   position: absolute;
-  top: 63px;
-  right: 101px;
+  top: 52px;
+  right: 83px;
   display: grid;
   place-items: center;
-  width: 102px;
-  height: 82px;
-  border-radius: 8px 8px 35px 35px;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
   background: #f5efe2;
-  color: #614c36;
+  color: #244c39;
   box-shadow: 0 12px 22px #0e2d21a8;
-}
-
-.coffee-cup:after {
-  position: absolute;
-  right: -23px;
-  width: 27px;
-  height: 34px;
-  border: 8px solid #eee5d6;
-  border-left: 0;
-  border-radius: 0 22px 22px 0;
-  content: '';
-}
-
-.steam {
-  position: absolute;
-  top: 36px;
-  right: 136px;
-  width: 2px;
-  height: 30px;
-  border-radius: 100%;
-  background: #f6eee0;
-  transform: rotate(12deg);
-}
-
-.steam-two {
-  right: 158px;
-  top: 32px;
-  transform: rotate(-9deg);
 }
 
 .stat-grid {

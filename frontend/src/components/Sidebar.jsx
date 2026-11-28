@@ -9,6 +9,9 @@ const PAGE_ICONS = {
   profiles: 'sliders',
   roasts: 'flame',
   history: 'clock',
+  reports: 'chart',
+  users: 'users',
+  account: 'userRound',
 };
 
 export default function Sidebar({
@@ -46,25 +49,10 @@ export default function Sidebar({
       <aside className={sidebarClasses}>
         {/* Marca */}
         <div className="brand brand-sidebar">
-          <span className="brand-icon">
-            <Icon name="bean" size={25} />
-          </span>
+          <span className="brand-icon brand-monogram" aria-hidden="true">R</span>
           <span>
             Roast<span className="brand-highlight">Lab</span>
           </span>
-        </div>
-
-        {/* Espacio de trabajo */}
-        <div
-          className="workspace"
-          title={isCollapsed ? 'RoastLab Café · Espacio de trabajo' : undefined}
-        >
-          <span className="workspace-icon">R</span>
-          <div>
-            <b>RoastLab Café</b>
-            <small>Espacio de trabajo</small>
-          </div>
-          <span className="workspace-chevron">⌄</span>
         </div>
 
         {/* Navegación principal */}

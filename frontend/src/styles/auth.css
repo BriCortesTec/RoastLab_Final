@@ -68,16 +68,22 @@
   display: grid;
   place-items: center;
   padding: 48px 30px;
+  background: #f8f9f6;
 }
 
 .auth-card {
   width: min(100%,420px);
+  padding: 40px;
+  border: 1px solid #e8ebe4;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 18px 48px #1c39220d;
 }
 
 .auth-card h2 {
   font-size: 35px;
   letter-spacing: -.03em;
-  margin: 11px 0 6px;
+  margin: 0 0 8px;
 }
 
 .auth-card>.muted {
@@ -129,6 +135,10 @@
     padding: 28px 22px;
   }
 
+  .auth-card {
+    padding: 28px 24px;
+  }
+
   .brand-mobile {
     display: flex;
     margin-bottom: 38px;
@@ -151,6 +161,35 @@
   .auth-panel {
     padding: 20px 17px;
   }
+
+  .auth-card {
+    padding: 24px 19px;
+  }
+}
+.auth-link {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--green, #244c39);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.success-note {
+  padding: 11px 13px;
+  border-radius: 8px;
+  background: #edf5ee;
+  color: #244c39;
+  line-height: 1.5;
+}
+
+.auth-action-layout {
+  grid-template-columns: 1fr;
+  min-height: 100vh;
 }
 .auth-link {
   display: inline-block;
