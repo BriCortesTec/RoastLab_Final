@@ -9,14 +9,13 @@ spring.datasource.password=CAMBIAR
 app.jwt.secret=CAMBIAR_POR_BASE64_ALEATORIO
 
 # --- Produccion (VPS) ---
-# app.cors.allowed-origins=https://roastlab.site
-# app.frontend-url=https://roastlab.site
+# app.cors.allowed-origins=https://roastlab.space
+# app.frontend-url=https://roastlab.space
 # spring.mail.host=localhost
 # spring.mail.port=25
-# app.mail.from=no-reply@roastlab.site
+# app.mail.from=no-reply@roastlab.space
 
-# --- Twilio (SMS y WhatsApp) ---
-# twilio.account-sid=CAMBIAR
-# twilio.auth-token=CAMBIAR
-# twilio.sms-from=+1XXXXXXXXXX
-# twilio.whatsapp-from=whatsapp:+14155238886
+# --- Meta WhatsApp Cloud API (solo en configuración externa local/producción) ---
+# meta.whatsapp.phone-number-id=CAMBIAR
+# meta.whatsapp.access-token=CAMBIAR
+# meta.whatsapp.api-version=v25.0

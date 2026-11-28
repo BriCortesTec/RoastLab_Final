@@ -5,9 +5,11 @@ import ConfirmDialog from '../components/ConfirmDialog.jsx';
 import '../styles/catalogs.css';
 
 const emptyAccount = {name: '', surname: '', email: '', phone: '', password: '', role: 'tostador', active: true};
+const PHONE_PATTERN = /^(?:[0-9]{10}|\+?52[0-9]{10}|\+?521[0-9]{10})$/;
+const PHONE_MESSAGE = 'Usa 10 dígitos mexicanos o lada +52 (también se acepta el prefijo antiguo 521).';
 const fields = [
   ['name', 'Nombre', 'text', 80], ['surname', 'Apellido', 'text', 80],
-  ['email', 'Correo electrónico', 'email', 120], ['phone', 'Teléfono', 'tel', 16],
+  ['email', 'Correo electrónico', 'email', 120], ['phone', 'Teléfono', 'tel', 14],
   ['password', 'Contraseña', 'password'],
 ];
 
@@ -51,8 +53,8 @@ export default function Accounts({ personal, user, onProfile, notify }) {
     if (!personal && !form.id && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
       invalid.email = 'Escribe un correo electrónico válido.';
     }
-    if (form.phone.trim() && !/^\+?[0-9]{10,15}$/.test(form.phone.trim())) {
-      invalid.phone = 'Usa de 10 a 15 dígitos, con + opcional al inicio.';
+    if (form.phone.trim() && !PHONE_PATTERN.test(form.phone.trim())) {
+      invalid.phone = PHONE_MESSAGE;
     }
     if (!personal && (!form.id || form.password) &&
         !/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(form.password)) {
@@ -104,8 +106,14 @@ export default function Accounts({ personal, user, onProfile, notify }) {
           <input className="input" type={type} maxLength={max} name={key} autoComplete={{name: 'given-name', surname: 'family-name', email: 'email', phone: 'tel', password: 'new-password'}[key]}
             readOnly={key === 'email' && (personal || Boolean(form.id))}
             value={form[key] || ''} aria-invalid={Boolean(errors[key])}
-            onChange={e => setForm({...form, [key]: e.target.value})}/>
-          {errors[key] && <small role="alert">{errors[key]}</small>}
+            onChange={e => {
+              const value = e.target.value;
+              setForm({...form, [key]: value});
+              if (key === 'phone' && errors.phone) {
+                setErrors(current => ({...current, phone: value.trim() && !PHONE_PATTERN.test(value.trim()) ? PHONE_MESSAGE : ''}));
+              }
+            }}/>
+          {errors[key] ? <small role="alert">{errors[key]}</small> : key === 'phone' ? <small>10 dígitos mexicanos o +52 seguido de 10 dígitos.</small> : null}
         </label>)}
       <label className="field">Rol
         <select className="input" value={form.role} disabled={personal || !admin}

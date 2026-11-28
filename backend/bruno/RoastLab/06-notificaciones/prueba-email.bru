@@ -1,0 +1,29 @@
+meta {
+  name: Prueba de correo (Postfix)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/notificaciones/prueba
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "channel": "email",
+    "to": "{{emailTo}}",
+    "message": "Prueba de envío de correo desde RoastLab."
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 30000
+  forwardAuthorizationHeader: false
+}

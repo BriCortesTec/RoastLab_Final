@@ -12,8 +12,7 @@ spring.mail.host=localhost
 spring.mail.port=25
 app.mail.from=no-reply@roastlab.space
 
-# Twilio
-twilio.account-sid=CAMBIAR
-twilio.auth-token=CAMBIAR
-twilio.sms-from=+1XXXXXXXXXX
-twilio.whatsapp-from=whatsapp:+14155238886
+# Meta WhatsApp Cloud API
+meta.whatsapp.phone-number-id=CAMBIAR
+meta.whatsapp.access-token=CAMBIAR
+meta.whatsapp.api-version=v25.0

@@ -5,6 +5,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Pageable;
 import com.roastlab.backend.security.AuthenticatedUser;
 import com.roastlab.backend.exception.NotFoundException;
+import com.roastlab.backend.exception.BusinessException;
 import com.roastlab.backend.dto.*;
 import com.roastlab.backend.entity.*;
 import com.roastlab.backend.repository.*;
@@ -89,7 +90,7 @@ public class TuesteService {
 
     private static final String ESTADO_COMPLETADO = "Completado";
 
-    /** Dispara correo + SMS + WhatsApp (asíncrono) solo la primera vez que el tueste queda completado. */
+    /** Dispara correo y WhatsApp (asíncronos) solo la primera vez que el tueste queda completado. */
     private void avisarSiSeCompleto(Tueste tueste, boolean yaEstabaCompletado) {
         if (!yaEstabaCompletado && ESTADO_COMPLETADO.equalsIgnoreCase(tueste.getEstado())) {
             notificacionService.tuesteCompletado(tueste.getUsuario().getIdUsuario(), tueste.getNombre(),
@@ -103,6 +104,12 @@ public class TuesteService {
     }
 
     private void aplicarDatos(Tueste tueste, TuesteDTO dto) {
+        validarReglasDeTueste(dto);
+        if (dto.output().compareTo(dto.input()) > 0) {
+            throw new BusinessException(
+                "output", "El peso de salida no puede superar el peso de entrada."
+            );
+        }
         tueste.setNombre(dto.name());
         tueste.setFechaTueste(dto.date());
         tueste.setTemperaturaMaxima(dto.maxTemp());
@@ -177,6 +184,57 @@ public class TuesteService {
                 relacion.setCantidadUtilizadaKg(item.quantityKg());
                 tueste.getLotes().add(relacion);
             }
+        }
+    }
+
+    /** Reglas del proceso que no se pueden expresar con anotaciones de campo. */
+    private void validarReglasDeTueste(TuesteDTO dto) {
+        List<MedicionTuesteDTO> lecturas = dto.measurements();
+        if (lecturas == null || lecturas.isEmpty()) {
+            throw new BusinessException("measurements", "El tueste debe incluir lecturas de temperatura.");
+        }
+
+        for (MedicionTuesteDTO lectura : lecturas) {
+            if (lectura == null || lectura.seconds() == null || lectura.temperature() == null) {
+                throw new BusinessException("measurements", "Cada lectura debe incluir tiempo y temperatura.");
+            }
+        }
+
+        for (int i = 1; i < lecturas.size(); i++) {
+            if (lecturas.get(i).seconds() < lecturas.get(i - 1).seconds()) {
+                throw new BusinessException("measurements", "Las lecturas deben conservar el orden del tueste.");
+            }
+        }
+
+        java.util.Map<String, MedicionTuesteDTO> hitos = new java.util.HashMap<>();
+        for (MedicionTuesteDTO lectura : lecturas) {
+            String tipo = lectura.eventType();
+            if (tipo == null || tipo.isBlank()) continue;
+            if (hitos.putIfAbsent(tipo, lectura) != null) {
+                throw new BusinessException("measurements", "Cada hito solo puede registrarse una vez.");
+            }
+        }
+
+        MedicionTuesteDTO carga = hitos.get("charge");
+        MedicionTuesteDTO tp = hitos.get("tp");
+        MedicionTuesteDTO finSecado = hitos.get("dry_end");
+        MedicionTuesteDTO primerCrack = hitos.get("fc_start");
+        MedicionTuesteDTO caida = hitos.get("drop");
+        if (carga == null || carga.seconds() != 0) {
+            throw new BusinessException("measurements", "La primera lectura debe ser la carga en 00:00.");
+        }
+        if (lecturas.get(0) != carga) {
+            throw new BusinessException("measurements", "La carga debe ser la primera lectura.");
+        }
+        if (tp == null || finSecado == null || primerCrack == null || caida == null) {
+            throw new BusinessException("measurements", "El tueste requiere Carga, TP, Fin del secado, Primer crack y Caída.");
+        }
+        if (!(carga.seconds() < tp.seconds()
+                && tp.seconds() < finSecado.seconds()
+                && finSecado.seconds() < primerCrack.seconds()
+                && primerCrack.seconds() < caida.seconds())
+                || lecturas.get(lecturas.size() - 1) != caida) {
+            throw new BusinessException("measurements", "Los hitos deben seguir el orden del tueste y la caída debe ser la última lectura.");
         }
     }
 

@@ -77,4 +77,4 @@ Para compilar la versión de entrega:
 npm run build
 ```
 
-La configuración de Vite genera rutas desde `/`, que corresponde a la configuración de Nginx y al dominio `https://roastlab.site/`.
+La configuración de Vite genera rutas desde `/`, que corresponde a la configuración de Nginx y al dominio `https://roastlab.space/`.

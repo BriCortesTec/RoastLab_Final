@@ -3,7 +3,7 @@ package com.roastlab.backend.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-/** Bitácora de mensajes enviados: canal = EMAIL | SMS | WHATSAPP, estado = ENVIADO | ERROR. */
+/** Bitácora de mensajes enviados: canal = EMAIL | WHATSAPP, estado = ENVIADO | ERROR. */
 @Entity
 @Table(name = "notificaciones")
 public class Notificacion {

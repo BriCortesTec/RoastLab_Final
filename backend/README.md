@@ -1,11 +1,11 @@
 # ☕ RoastLab
 
-Aplicación web full stack para **gestionar tuestes de café**: catálogo de cafés y lotes de café verde, perfiles de tueste con su curva objetivo, registro de tuestes en vivo (temperatura, hitos y ajustes de máquina), historial con curvas, reportes y notificaciones al usuario por correo, SMS y WhatsApp.
+Aplicación web full stack para **gestionar tuestes de café**: catálogo de cafés y lotes de café verde, perfiles de tueste con su curva objetivo, registro de tuestes en vivo (temperatura, hitos y ajustes de máquina), historial con curvas, reportes y notificaciones al usuario por correo y WhatsApp.
 
 | | |
 |---|---|
-| **Sitio (HTTPS)** | https://roastlab.site |
-| **URL base de la API** | https://roastlab.site/api |
+| **Sitio (HTTPS)** | https://roastlab.space |
+| **URL base de la API** | https://roastlab.space/api |
 | **Repositorio** | https://github.com/BriCortesTec/RoastLab_Final |
 | **Tablero GitHub Projects** | https://github.com/users/BriCortesTec/projects/2/views/1 |
 | **Prototipo Figma** | _[PEGAR AQUÍ EL LINK DEL PROTOTIPO NAVEGABLE]_ |
@@ -18,7 +18,7 @@ Aplicación web full stack para **gestionar tuestes de café**: catálogo de caf
 | Backend | Java 21, Spring Boot 4, Spring Security + JWT (jjwt), Spring Data JPA/Hibernate, Bean Validation, Flyway |
 | Frontend | React 18, Vite, Axios |
 | Base de datos | MySQL 8 (migraciones con Flyway) |
-| Comunicación | Postfix + JavaMailSender (correo), Twilio (SMS y WhatsApp) |
+| Comunicación | Postfix + JavaMailSender (correo), Meta WhatsApp Cloud API (WhatsApp) |
 | Pruebas de API | Bruno (carpeta `bruno/` versionada) |
 | Despliegue | VPS Ubuntu, systemd, Nginx, Let's Encrypt (Certbot) |
 
@@ -148,7 +148,7 @@ Las tablas se crean **solo con Flyway** (`backend/src/main/resources/db/migratio
 | V6 | Teléfono de usuario, tokens revocados (logout), recuperación de contraseña y bitácora de notificaciones |
 | Datos de muestra | `database/RoastLab_schema.sql` (se ejecuta manualmente; no es una migración Flyway) |
 
-El archivo [`database/RoastLab_schema.sql`](../database/RoastLab_schema.sql) contiene el esquema y datos de muestra. No es un respaldo generado desde una instancia de producción. Las migraciones Flyway instaladas actualmente son V1 a V6; los datos de muestra del SQL no se cargan automáticamente con Flyway.
+El archivo [`database/RoastLab_schema.sql`](../database/RoastLab_schema.sql) contiene el esquema y datos de muestra. No es un respaldo generado desde una instancia de producción. Las migraciones Flyway instaladas actualmente son V1 a V8; los datos de muestra del SQL no se cargan automáticamente con Flyway.
 
 ## Instalación local
 
@@ -198,8 +198,9 @@ Los errores siempre son JSON con el código HTTP correcto (400, 401, 403, 404, 4
 | Canal | Cuándo se envía | Cómo |
 |---|---|---|
 | **Correo** | Registro, recuperación de contraseña y tueste completado | `JavaMailSender` → Postfix local del VPS, con SPF, DKIM y DMARC (`deploy/04-postfix-dkim.sh`) |
-| **SMS** | Cuando un tueste pasa a *Completado* (si el usuario tiene teléfono) | API REST de Twilio |
-| **WhatsApp** | Cuando un tueste pasa a *Completado* (si el usuario tiene teléfono) | API REST de Twilio (WhatsApp) |
+| **WhatsApp** | Cuando un tueste pasa a *Completado* (si el usuario tiene teléfono) | Meta WhatsApp Cloud API, usando la plantilla aprobada `roastlab_tueste_completado` |
+
+SMS no forma parte de esta entrega. Para WhatsApp se requiere configurar las claves de Meta y aprobar la plantilla; ver [`deploy/DEPLOY.md`](deploy/DEPLOY.md).
 
 Cada envío queda registrado en la tabla `notificaciones` (consultable por el administrador en `GET /api/notificaciones`).
 

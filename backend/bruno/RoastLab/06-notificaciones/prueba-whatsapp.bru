@@ -1,5 +1,5 @@
 meta {
-  name: Prueba de WhatsApp (el número debe haber hecho join al sandbox)
+  name: Prueba de WhatsApp (configura whatsappTo con un número real autorizado)
   type: http
   seq: 3
 }
@@ -17,11 +17,12 @@ auth:bearer {
 body:json {
   {
     "channel": "whatsapp",
-    "to": "+520000000000",
+    "to": "{{whatsappTo}}",
     "message": "Prueba WhatsApp desde RoastLab"
   }
 }
 
 assert {
   res.status: eq 200
+  res.body.status: eq ENVIADO
 }

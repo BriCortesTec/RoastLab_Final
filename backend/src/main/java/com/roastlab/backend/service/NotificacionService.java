@@ -51,30 +51,39 @@ public class NotificacionService {
             BigDecimal salidaKg,
             BigDecimal maxTemp,
             BigDecimal duracionMin) {
+        Usuario u;
+        try {
+            u = usuarios.findById(usuarioId).orElse(null);
+        } catch (Exception e) {
+            log.error("No se pudo cargar el usuario para notificar el tueste {}", nombre, e);
+            return;
+        }
+        if (u == null) return;
+
+        String detalle =
+            "Salida: " + (salidaKg == null ? "-" : salidaKg + " kg")
+            + ", temp. máx.: " + (maxTemp == null ? "-" : maxTemp + " °C")
+            + ", duración: " + (duracionMin == null ? "-" : duracionMin + " min");
+
+        String texto =
+            "RoastLab: tu tueste \"" + nombre + "\" se completó. " + detalle + ".";
 
         try {
-            Usuario u = usuarios.findById(usuarioId).orElse(null);
-            if (u == null) return;
-
-            String detalle =
-                "Salida: " + (salidaKg == null ? "-" : salidaKg + " kg")
-                + ", temp. máx.: " + (maxTemp == null ? "-" : maxTemp + " °C")
-                + ", duración: " + (duracionMin == null ? "-" : duracionMin + " min");
-
-            String texto =
-                "RoastLab: tu tueste \"" + nombre + "\" se completó. " + detalle + ".";
-
             mailService.enviar(
                 u,
                 "Tueste completado: " + nombre,
                 "Hola " + u.getNombre() + ",\n\n" + texto
             );
+        } catch (Exception e) {
+            // Un fallo SMTP o de bitácora no debe impedir el envío por WhatsApp.
+            log.error("No se pudo completar el canal de correo para el tueste {}", nombre, e);
+        }
 
-            if (u.getTelefono() != null && !u.getTelefono().isBlank()) {
-                String salida = salidaKg == null ? "-" : salidaKg.toString();
-                String temperatura = maxTemp == null ? "-" : maxTemp.toString();
-                String duracion = duracionMin == null ? "-" : duracionMin.toString();
-
+        if (u.getTelefono() != null && !u.getTelefono().isBlank()) {
+            String salida = salidaKg == null ? "-" : salidaKg.toString();
+            String temperatura = maxTemp == null ? "-" : maxTemp.toString();
+            String duracion = duracionMin == null ? "-" : duracionMin.toString();
+            try {
                 registrar(
                     u,
                     "WHATSAPP",
@@ -90,15 +99,10 @@ public class NotificacionService {
                         duracion
                     )
                 );
+            } catch (Exception e) {
+                // También se aísla un fallo al guardar la bitácora de WhatsApp.
+                log.error("No se pudo completar el canal de WhatsApp para el tueste {}", nombre, e);
             }
-
-
-        } catch (Exception e) {
-            log.error(
-                "No se pudieron enviar las notificaciones del tueste {}",
-                nombre,
-                e
-            );
         }
     }
 

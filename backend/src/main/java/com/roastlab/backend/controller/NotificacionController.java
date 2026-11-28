@@ -8,7 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-/** Bitácora y pruebas de envío de correo, SMS y WhatsApp. Solo administrador. */
+/** Bitácora y pruebas de envío de correo y WhatsApp. Solo administrador. */
 @RestController
 @RequestMapping("/api/notificaciones")
 @PreAuthorize("hasRole('ADMIN')")

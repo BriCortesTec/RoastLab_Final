@@ -22,7 +22,7 @@ DB_PASSWORD='una-clave-fuerte-nueva' bash 02-base-de-datos.sh
 
 ```bash
 cp application-prod.properties.example /opt/roastlab/config/application-prod.properties
-nano /opt/roastlab/config/application-prod.properties     # password de BD, JWT, Twilio
+nano /opt/roastlab/config/application-prod.properties     # password de BD, JWT y token de Meta
 chown roastlab:roastlab /opt/roastlab/config/application-prod.properties
 chmod 600 /opt/roastlab/config/application-prod.properties
 openssl rand -base64 48        # úsalo como app.jwt.secret
@@ -75,13 +75,22 @@ tail -f /var/log/mail.log          # debe decir status=sent
 
 Verifica la calidad en https://www.mail-tester.com (SPF y DKIM en verde). Si el PTR no está configurado, algunos correos caerán en spam.
 
-## 7. Twilio
+## 7. WhatsApp Cloud API (Meta)
 
 - **SMS**: descartado para esta entrega.
-- **WhatsApp**: integración mediante Meta WhatsApp Cloud API.
-  Configurar `META_WHATSAPP_PHONE_NUMBER_ID` y `META_WHATSAPP_TOKEN`
-  como variables de entorno. La versión de Graph API se configura
-  mediante `meta.whatsapp.api-version`.
+- **WhatsApp**: integración mediante Meta WhatsApp Cloud API. En el archivo
+  externo `/opt/roastlab/config/application-prod.properties`, configura
+  `meta.whatsapp.phone-number-id`, `meta.whatsapp.access-token` y
+  `meta.whatsapp.api-version`. El access token debe tener el permiso
+  `whatsapp_business_messaging`.
+- Registra el número de negocio en Cloud API y crea/aprueba la plantilla
+  `roastlab_tueste_completado` en español de México (`es_MX`) con cinco
+  parámetros de texto en el cuerpo. El sistema la usa para notificar el tueste
+  completado. La prueba manual de texto requiere una ventana de atención abierta
+  con el destinatario; para iniciar conversaciones, Meta exige una plantilla
+  aprobada y el consentimiento previo del destinatario.
+- No guardes el token en Git, en `application.properties` versionado ni en el
+  frontend. El archivo externo de configuración se protege con permisos `600`.
 
 ## Comprobación final
 

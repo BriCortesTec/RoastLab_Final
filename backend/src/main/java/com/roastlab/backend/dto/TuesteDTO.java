@@ -19,12 +19,14 @@ public record TuesteDTO(
     @DecimalMin(value = "0.0", message = "La duración no puede ser negativa.") BigDecimal duration,
     @NotNull(message = "El peso de entrada es obligatorio.")
     @DecimalMin(value = "0.0", inclusive = false, message = "El peso de entrada debe ser mayor a 0.") BigDecimal input,
-    @DecimalMin(value = "0.0", message = "El peso de salida no puede ser negativo.") BigDecimal output,
+    @NotNull(message = "El peso de salida es obligatorio.")
+    @DecimalMin(value = "0.0", inclusive = false, message = "El peso de salida debe ser mayor a cero.") BigDecimal output,
     @DecimalMin(value = "0.0", message = "Temperatura inválida.") @DecimalMax(value = "400.0", message = "Temperatura fuera de rango.") BigDecimal maxTemp,
     @Size(max = 30, message = "Máximo 30 caracteres.") String status,
     String observations,
-    List<@Valid TuesteLoteDTO> lots,
-    List<MedicionTuesteDTO> measurements,
+    @NotEmpty(message = "El tueste debe consumir al menos un lote.") List<@NotNull @Valid TuesteLoteDTO> lots,
+    @NotEmpty(message = "El tueste debe incluir lecturas de temperatura.")
+    @Size(min = 2, message = "Registra al menos dos lecturas de temperatura.") List<@NotNull @Valid MedicionTuesteDTO> measurements,
     List<EventoDTO> events,
-    List<AjusteTuesteDTO> adjustments
+    List<@NotNull @Valid AjusteTuesteDTO> adjustments
 ) {}
