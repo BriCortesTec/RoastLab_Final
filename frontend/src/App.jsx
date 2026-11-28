@@ -13,6 +13,7 @@ import Sidebar from './components/Sidebar.jsx';
 import Topbar from './components/Topbar.jsx';
 import Toast from './components/Toast.jsx';
 import Accounts from './pages/Accounts.jsx';
+import AuthAction from './pages/AuthAction.jsx';
 import { resourceService, authService } from './services/api.js';
 
 function readData() {
@@ -21,9 +22,14 @@ function readData() {
 }
 
 export default function App() {
+  const authActionPath = window.location.pathname;
+  const authActionMode = authActionPath === '/verify-email' ? 'verify-email'
+    : authActionPath === '/reset-password' ? 'reset-password' : null;
+  const authActionToken = new URLSearchParams(window.location.search).get('token') || '';
   const [user, setUser] = useState(null);
   const [checking, setChecking] = useState(Boolean(localStorage.getItem('roastlab_token')));
   useEffect(() => {
+    if (authActionMode) return;
     if (!localStorage.getItem('roastlab_token')) return;
     let current = true;
     authService.me().then(account => { if (current) setUser(account); })
@@ -76,6 +82,7 @@ export default function App() {
     setSidebarCollapsed((collapsed) => !collapsed);
   };
 
+  if (authActionMode) return <AuthAction mode={authActionMode} token={authActionToken} />;
   if (checking) return <p role="status">Verificando sesión…</p>;
   if (!user) return <Login onLogin={signIn} />;
 

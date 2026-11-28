@@ -1,0 +1,16 @@
+{
+  "name": "roastlab_bienvenida",
+  "language": "es_MX",
+  "category": "UTILITY",
+  "components": [
+    {
+      "type": "BODY",
+      "text": "Hola {{1}}, te damos la bienvenida a RoastLab. Revisa tu correo para verificar tu cuenta y poder iniciar sesión.",
+      "example": {
+        "body_text": [
+          ["Nadya"]
+        ]
+      }
+    }
+  ]
+}

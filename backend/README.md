@@ -18,7 +18,7 @@ Aplicación web full stack para **gestionar tuestes de café**: catálogo de caf
 | Backend | Java 21, Spring Boot 4, Spring Security + JWT (jjwt), Spring Data JPA/Hibernate, Bean Validation, Flyway |
 | Frontend | React 18, Vite, Axios |
 | Base de datos | MySQL 8 (migraciones con Flyway) |
-| Comunicación | Postfix + JavaMailSender (correo), Meta WhatsApp Cloud API (WhatsApp) |
+| Comunicación | Gmail SMTP + JavaMailSender (correo), Meta WhatsApp Cloud API (WhatsApp) |
 | Pruebas de API | Bruno (carpeta `bruno/` versionada) |
 | Despliegue | VPS Ubuntu, systemd, Nginx, Let's Encrypt (Certbot) |
 
@@ -148,7 +148,7 @@ Las tablas se crean **solo con Flyway** (`backend/src/main/resources/db/migratio
 | V6 | Teléfono de usuario, tokens revocados (logout), recuperación de contraseña y bitácora de notificaciones |
 | Datos de muestra | `database/RoastLab_schema.sql` (se ejecuta manualmente; no es una migración Flyway) |
 
-El archivo [`database/RoastLab_schema.sql`](../database/RoastLab_schema.sql) contiene el esquema y datos de muestra. No es un respaldo generado desde una instancia de producción. Las migraciones Flyway instaladas actualmente son V1 a V8; los datos de muestra del SQL no se cargan automáticamente con Flyway.
+El archivo [`database/RoastLab_schema.sql`](../database/RoastLab_schema.sql) contiene el esquema y datos de muestra. No es un respaldo generado desde una instancia de producción. Las migraciones Flyway instaladas actualmente son V1 a V9; los datos de muestra del SQL no se cargan automáticamente con Flyway.
 
 ## Instalación local
 
@@ -161,7 +161,7 @@ mysql -u root -p -e "CREATE DATABASE roastlab_final CHARACTER SET utf8mb4;"
 # 2. Configuración del backend (los secretos NO se suben al repositorio)
 cd backend/src/main/resources
 cp application.properties.example application-local.properties
-#    edita application-local.properties: password de MySQL y app.jwt.secret
+#    edita application-local.properties: password de MySQL, app.jwt.secret y credenciales Gmail/Meta
 #    (genera el secreto con:  openssl rand -base64 48)
 
 # 3. Backend (Flyway crea las tablas y los roles al arrancar)
@@ -177,11 +177,11 @@ npm run dev                       # http://localhost:5173
 
 ## API (resumen)
 
-Todas las rutas, excepto login y recuperación de contraseña, requieren `Authorization: Bearer <token>`.
+Todas las rutas, excepto login, verificación de correo y recuperación de contraseña, requieren `Authorization: Bearer <token>`.
 
 | Recurso | Endpoints | ADMIN | GERENTE | TOSTADOR |
 |---|---|:-:|:-:|:-:|
-| Auth | `POST /api/auth/login · logout · forgot-password · reset-password`, `GET/PUT /api/auth/me` | ✔ | ✔ | ✔ |
+| Auth | `POST /api/auth/login · logout · forgot-password · reset-password · resend-verification`, `POST /api/auth/verify-email`, `GET /api/auth/me`, `PUT /api/auth/me` | ✔ | ✔ | ✔ |
 | Usuarios | `GET/POST/PUT/DELETE /api/usuarios` | ✔ | alta de tostadores | – |
 | Cafés, lotes, perfiles | `GET/POST/PUT/DELETE /api/cafes · lotes · perfiles` | CRUD | CRUD | lectura |
 | Tuestes | `GET/POST/PUT/DELETE /api/tuestes` | todos | lectura de todos | CRUD de los suyos |
@@ -197,10 +197,11 @@ Los errores siempre son JSON con el código HTTP correcto (400, 401, 403, 404, 4
 
 | Canal | Cuándo se envía | Cómo |
 |---|---|---|
-| **Correo** | Registro, recuperación de contraseña y tueste completado | `JavaMailSender` → Postfix local del VPS, con SPF, DKIM y DMARC (`deploy/04-postfix-dkim.sh`) |
-| **WhatsApp** | Cuando un tueste pasa a *Completado* (si el usuario tiene teléfono) | Meta WhatsApp Cloud API, usando la plantilla aprobada `roastlab_tueste_completado` |
+| **Correo** | Bienvenida con verificación y recuperación de contraseña | `JavaMailSender` → Gmail SMTP con contraseña de aplicación |
+| **WhatsApp** | Bienvenida de cuenta nueva, dirigida al número de prueba autorizado | Meta WhatsApp Cloud API, usando `roastlab_bienvenida` |
+| **Avisos de tueste** | Desactivados temporalmente mediante `app.notifications.roast-completed.enabled=false` | El código y la plantilla `roastlab_tueste_completado` se conservan |
 
-SMS no forma parte de esta entrega. Para WhatsApp se requiere configurar las claves de Meta y aprobar la plantilla; ver [`deploy/DEPLOY.md`](deploy/DEPLOY.md).
+SMS no forma parte de esta entrega. Para activar bienvenidas de WhatsApp se requiere configurar las claves de Meta, elegir un destinatario autorizado de prueba y aprobar `roastlab_bienvenida`; el payload está en [`deploy/whatsapp-template-roastlab_bienvenida.json`](deploy/whatsapp-template-roastlab_bienvenida.json). La recuperación usa un token aleatorio de un solo uso, con vencimiento de 30 minutos y persistido como hash. La verificación de correo vence a las 24 horas y también se persiste como hash.
 
 Cada envío queda registrado en la tabla `notificaciones` (consultable por el administrador en `GET /api/notificaciones`).
 
@@ -210,7 +211,7 @@ Abre la carpeta [`backend/bruno/RoastLab`](bruno/RoastLab) en Bruno y elige el e
 
 ## Despliegue
 
-Guía completa en [`deploy/DEPLOY.md`](deploy/DEPLOY.md): swap, MySQL, backend como JAR con systemd, frontend estático servido por Nginx, HTTPS con Let's Encrypt y Postfix con SPF/DKIM.
+Guía completa en [`deploy/DEPLOY.md`](deploy/DEPLOY.md): MySQL, backend como JAR con systemd, frontend estático servido por Nginx, HTTPS con Let's Encrypt y Gmail SMTP.
 
 ## Seguridad
 

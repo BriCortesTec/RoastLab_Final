@@ -13,6 +13,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Service
 @Transactional
@@ -20,11 +22,17 @@ public class UsuarioService {
     private final UsuarioRepository usuarios;
     private final RolRepository roles;
     private final PasswordEncoder encoder;
+    private final EmailVerificationService emailVerificationService;
+    private final NotificacionService notificacionService;
 
-    public UsuarioService(UsuarioRepository usuarios, RolRepository roles, PasswordEncoder encoder) {
+    public UsuarioService(UsuarioRepository usuarios, RolRepository roles, PasswordEncoder encoder,
+                          EmailVerificationService emailVerificationService,
+                          NotificacionService notificacionService) {
         this.usuarios = usuarios;
         this.roles = roles;
         this.encoder = encoder;
+        this.emailVerificationService = emailVerificationService;
+        this.notificacionService = notificacionService;
     }
 
     @Transactional(readOnly = true)
@@ -48,11 +56,22 @@ public class UsuarioService {
         u.setNombre(dto.name().trim());
         u.setApellido(dto.surname().trim());
         u.setCorreo(correo);
-        u.setTelefono(dto.phone());
+        u.setTelefono(PhoneRules.normalizar(dto.phone()));
         u.setPasswordHash(encoder.encode(dto.password()));
         u.setRol(rol(dto.role()));
         u.setActivo(true);
-        return AuthService.aDTO(usuarios.save(u));
+        u.setCorreoVerificado(false);
+        Usuario guardado = usuarios.save(u);
+        String verificationUrl = emailVerificationService.crearEnlace(guardado);
+        Runnable bienvenida = () -> notificacionService.bienvenidaUsuario(guardado.getIdUsuario(), verificationUrl);
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override public void afterCommit() { bienvenida.run(); }
+            });
+        } else {
+            bienvenida.run();
+        }
+        return AuthService.aDTO(guardado);
     }
 
     public UsuarioDTO actualizar(Integer id, UsuarioEditarDTO dto, Integer adminId) {
@@ -62,7 +81,7 @@ public class UsuarioService {
         }
         u.setNombre(dto.name().trim());
         u.setApellido(dto.surname().trim());
-        u.setTelefono(dto.phone());
+        u.setTelefono(PhoneRules.normalizar(dto.phone()));
         u.setRol(rol(dto.role()));
         u.setActivo(dto.active());
         if (dto.password() != null && !dto.password().isBlank()) {

@@ -5,11 +5,18 @@ import ConfirmDialog from '../components/ConfirmDialog.jsx';
 import '../styles/catalogs.css';
 
 const emptyAccount = {name: '', surname: '', email: '', phone: '', password: '', role: 'tostador', active: true};
-const PHONE_PATTERN = /^(?:[0-9]{10}|\+?52[0-9]{10}|\+?521[0-9]{10})$/;
-const PHONE_MESSAGE = 'Usa 10 dígitos mexicanos o lada +52 (también se acepta el prefijo antiguo 521).';
+const PHONE_PATTERN = /^(?=.{10,20}$)\+?[0-9(). -]+$/;
+const PHONE_MESSAGE = 'Usa 10 dígitos mexicanos o lada +52; puedes escribir espacios o guiones.';
+function isMexicanPhone(value) {
+  if (!value.trim()) return true;
+  if (!PHONE_PATTERN.test(value.trim())) return false;
+  const digits = value.replace(/\D/g, '');
+  return digits.length === 10 || (digits.length === 12 && digits.startsWith('52')) ||
+    (digits.length === 13 && digits.startsWith('521'));
+}
 const fields = [
   ['name', 'Nombre', 'text', 80], ['surname', 'Apellido', 'text', 80],
-  ['email', 'Correo electrónico', 'email', 120], ['phone', 'Teléfono', 'tel', 14],
+  ['email', 'Correo electrónico', 'email', 120], ['phone', 'Teléfono', 'tel', 20],
   ['password', 'Contraseña', 'password'],
 ];
 
@@ -53,7 +60,7 @@ export default function Accounts({ personal, user, onProfile, notify }) {
     if (!personal && !form.id && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
       invalid.email = 'Escribe un correo electrónico válido.';
     }
-    if (form.phone.trim() && !PHONE_PATTERN.test(form.phone.trim())) {
+    if (!isMexicanPhone(form.phone)) {
       invalid.phone = PHONE_MESSAGE;
     }
     if (!personal && (!form.id || form.password) &&
@@ -79,7 +86,7 @@ export default function Accounts({ personal, user, onProfile, notify }) {
         edit(null);
         setRevision(value => value + 1);
       }
-      notify(personal ? 'Perfil actualizado.' : form.id ? 'Usuario actualizado.' : 'Cuenta creada.');
+      notify(personal ? 'Perfil actualizado.' : form.id ? 'Usuario actualizado.' : 'Cuenta creada. El enlace privado de verificación llegará solo por correo; WhatsApp enviará únicamente un saludo al destinatario autorizado de prueba.');
     } catch (error) {
       setErrors(error.fieldErrors || {});
       if (!Object.keys(error.fieldErrors || {}).length) setFailure(error.message);
@@ -110,10 +117,10 @@ export default function Accounts({ personal, user, onProfile, notify }) {
               const value = e.target.value;
               setForm({...form, [key]: value});
               if (key === 'phone' && errors.phone) {
-                setErrors(current => ({...current, phone: value.trim() && !PHONE_PATTERN.test(value.trim()) ? PHONE_MESSAGE : ''}));
+                setErrors(current => ({...current, phone: !isMexicanPhone(value) ? PHONE_MESSAGE : ''}));
               }
             }}/>
-          {errors[key] ? <small role="alert">{errors[key]}</small> : key === 'phone' ? <small>10 dígitos mexicanos o +52 seguido de 10 dígitos.</small> : null}
+          {errors[key] ? <small role="alert">{errors[key]}</small> : key === 'phone' ? <small>10 dígitos mexicanos; se aceptan +52, espacios y guiones.</small> : null}
         </label>)}
       <label className="field">Rol
         <select className="input" value={form.role} disabled={personal || !admin}
@@ -136,9 +143,9 @@ export default function Accounts({ personal, user, onProfile, notify }) {
       {listError && <p role="alert">{listError}</p>}
       {!result && !listError && <p role="status">Cargando usuarios…</p>}
       {result && <><div className="table-scroll"><table><thead><tr>
-        {['Nombre', 'Correo', 'Rol', 'Estado', 'Acciones'].map(title => <th key={title}>{title}</th>)}
+        {['Nombre', 'Correo', 'Verificación', 'Rol', 'Estado', 'Acciones'].map(title => <th key={title}>{title}</th>)}
       </tr></thead><tbody>{result.content.map(row => <tr key={row.id}>
-        <td>{row.name} {row.surname}</td><td>{row.email}</td><td>{ROLE_NAMES[row.role]}</td><td>{row.active ? 'Activa' : 'Inactiva'}</td>
+        <td>{row.name} {row.surname}</td><td>{row.email}</td><td>{row.emailVerified ? 'Verificado' : 'Pendiente'}</td><td>{ROLE_NAMES[row.role]}</td><td>{row.active ? 'Activa' : 'Inactiva'}</td>
         <td><div className="row-actions"><button onClick={() => edit(row)}>Editar</button>
           {row.active && row.id !== user.id && <button onClick={() => setRemoving(row)}>Desactivar</button>}</div></td>
       </tr>)}</tbody></table></div>

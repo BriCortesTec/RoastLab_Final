@@ -76,7 +76,8 @@ public class SecurityConfig {
                     .requestMatchers("/error").permitAll()
                     // Solo estas rutas de auth son públicas (logout y /me exigen token)
                     .requestMatchers("/api/auth/login",
-                            "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
+                            "/api/auth/forgot-password", "/api/auth/reset-password",
+                            "/api/auth/verify-email", "/api/auth/resend-verification").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/usuarios").hasAnyRole("ADMIN", "GERENTE")
                     .requestMatchers("/api/usuarios/**", "/api/notificaciones/**").hasRole("ADMIN")
                     .anyRequest().authenticated()

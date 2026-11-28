@@ -8,6 +8,7 @@ public record UsuarioDTO(
     String name,
     String surname,
     String email,
+    Boolean emailVerified,
     String phone,
     String role,
     Boolean active,

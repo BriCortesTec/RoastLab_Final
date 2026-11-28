@@ -1,14 +1,13 @@
 # Despliegue de RoastLab en el VPS (Ubuntu, 4 GB de RAM)
 
-Dominio: `roastlab.space` · Sistema: Ubuntu · Todo corre en el mismo servidor: MySQL, backend (JAR + systemd), frontend (build estático en Nginx), Postfix.
+Dominio: `roastlab.space` · Sistema: Ubuntu · Todo corre en el mismo servidor: MySQL, backend (JAR + systemd) y frontend (build estático en Nginx). El correo de la aplicación usa Gmail SMTP.
 
-> **Compilar en tu computadora, no en el VPS.** El script `deploy-local.sh` compila aquí y sube el resultado.
+> Es posible compilar en el VPS dentro de una **carpeta aislada de pruebas**, sin sobrescribir el JAR activo. El script `deploy-local.sh` es una alternativa para compilar en la computadora.
 
 ## 0. Antes de empezar
 
-1. **DNS** (panel donde compraste `roastlab.space`): crea los registros `A` de `@`, `www` y `mail` apuntando a la IP del VPS. Los demás (MX, SPF, DKIM, DMARC) te los imprime el paso 4.
-2. **Puerto 25**: prueba `nc -vz -w 5 gmail-smtp-in.l.google.com 25`. Si hace timeout, el proveedor lo bloquea: abre un ticket de soporte pidiendo desbloquear el SMTP saliente.
-3. Copia la carpeta `deploy/` al VPS: `scp -r backend/deploy ubuntu@13.185.56.85:~/`.
+1. **Gmail**: activa verificación en dos pasos y genera una contraseña de aplicación para RoastLab. No uses ni compartas la contraseña normal de la cuenta.
+2. Copia la carpeta `deploy/` al VPS: `scp -r backend/deploy ubuntu@13.185.56.85:~/`.
 
 ## 1. Preparar el servidor (como root, en el VPS)
 
@@ -21,8 +20,9 @@ DB_PASSWORD='una-clave-fuerte-nueva' bash 02-base-de-datos.sh
 ## 2. Configuración secreta del backend
 
 ```bash
-cp application-prod.properties.example /opt/roastlab/config/application-prod.properties
-nano /opt/roastlab/config/application-prod.properties     # password de BD, JWT y token de Meta
+# SOLO si el archivo de producción NO existe: nunca sobrescribas credenciales existentes.
+# cp application-prod.properties.example /opt/roastlab/config/application-prod.properties
+nano /opt/roastlab/config/application-prod.properties     # password de BD, JWT, Gmail y Meta
 chown roastlab:roastlab /opt/roastlab/config/application-prod.properties
 chmod 600 /opt/roastlab/config/application-prod.properties
 openssl rand -base64 48        # úsalo como app.jwt.secret
@@ -41,11 +41,11 @@ systemctl daemon-reload && systemctl enable roastlab
 VPS=ubuntu@13.185.56.85 bash backend/deploy/deploy-local.sh
 ```
 
-En el VPS: `systemctl status roastlab` y `journalctl -u roastlab -f`. En el primer arranque Flyway aplica V1–V8 y crea los roles. El archivo de ejemplo de la carpeta database es independiente.
+En el VPS: `systemctl status roastlab` y `journalctl -u roastlab -f`. En el primer arranque Flyway aplica V1–V9, incluye verificación de correo y crea los roles. El archivo de ejemplo de la carpeta database es independiente.
 
 ### Primer acceso y cuentas de evaluación
 
-Cuando el servicio esté activo, ejecuta desde la terminal del VPS:
+Cuando el servicio esté activo y hayas comprobado las migraciones, ejecuta desde la terminal del VPS:
 
 ```bash
 sudo apt-get install -y python3-bcrypt
@@ -60,20 +60,11 @@ El comando pide el correo y la contraseña en la terminal y crea el primer admin
 EMAIL=tu@correo.com bash 03-nginx-y-ssl.sh
 ```
 
-## 6. Correo propio: Postfix + SPF + DKIM
+## 6. Gmail SMTP
 
-```bash
-bash 04-postfix-dkim.sh
-```
+Si eliges Gmail SMTP, en `application-prod.properties` configura `spring.mail.username` con la cuenta Gmail, `spring.mail.password` con su contraseña de aplicación y `app.mail.from` con esa misma dirección. Reinicia el backend después de modificar el archivo. La configuración usa TLS en el puerto 587. Prueba el envío desde **Notificaciones → Probar correo** y confirma que la bitácora quede en `ENVIADO`.
 
-Imprime los registros DNS que debes crear (MX, SPF, DKIM, DMARC). Después:
-
-```bash
-echo "hola" | mail -s "Prueba RoastLab" tu_correo@gmail.com
-tail -f /var/log/mail.log          # debe decir status=sent
-```
-
-Verifica la calidad en https://www.mail-tester.com (SPF y DKIM en verde). Si el PTR no está configurado, algunos correos caerán en spam.
+Para usar un remitente `@roastlab.space`, Gmail debe permitir ese remitente como alias verificado. La autenticación se realiza con la cuenta configurada.
 
 ## 7. WhatsApp Cloud API (Meta)
 
@@ -85,8 +76,18 @@ Verifica la calidad en https://www.mail-tester.com (SPF y DKIM en verde). Si el 
   `whatsapp_business_messaging`.
 - Registra el número de negocio en Cloud API y crea/aprueba la plantilla
   `roastlab_tueste_completado` en español de México (`es_MX`) con cinco
-  parámetros de texto en el cuerpo. El sistema la usa para notificar el tueste
-  completado. La prueba manual de texto requiere una ventana de atención abierta
+  parámetros de texto en el cuerpo.
+- Crea y aprueba `roastlab_bienvenida` en `es_MX` usando el payload de
+  [`whatsapp-template-roastlab_bienvenida.json`](whatsapp-template-roastlab_bienvenida.json).
+  Su cuerpo debe tener **una variable: el nombre**. Por seguridad, el enlace de verificación **solo se manda al correo**, nunca por WhatsApp ni al número compartido de pruebas.
+  Configura `meta.whatsapp.welcome-test-recipient` con un número autorizado de
+  prueba y conserva `meta.whatsapp.welcome-mode=test`. Las bienvenidas nunca se
+  envían al teléfono que acaba de registrar en este modo. Para una etapa futura,
+  tras cambiar al número de negocio de producción y contar con consentimiento
+  del destinatario, se puede cambiar a `meta.whatsapp.welcome-mode=production`.
+- Los avisos automáticos de tueste se conservan en código pero quedan apagados
+  con `app.notifications.roast-completed.enabled=false`.
+- La prueba manual de texto requiere una ventana de atención abierta
   con el destinatario; para iniciar conversaciones, Meta exige una plantilla
   aprobada y el consentimiento previo del destinatario.
 - No guardes el token en Git, en `application.properties` versionado ni en el
@@ -99,5 +100,5 @@ Verifica la calidad en https://www.mail-tester.com (SPF y DKIM en verde). Si el 
 | `https://roastlab.space` | Login con candado (HTTPS válido) |
 | `curl -s https://roastlab.space/api/cafes` | `401` en JSON (protegido) |
 | Login con la cuenta administradora creada en el VPS | Entra al panel |
-| `systemctl status roastlab nginx postfix mysql` | todos `active` |
+| `systemctl status roastlab nginx mysql` | todos `active` |
 | `free -m` | swap en uso moderado, sin OOM |

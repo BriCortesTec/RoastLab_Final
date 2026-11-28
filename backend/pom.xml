@@ -76,7 +76,7 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- Correo (JavaMailSender hacia Postfix local) -->
+		<!-- Correo (JavaMailSender hacia el SMTP configurado: Gmail o Postfix) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-mail</artifactId>

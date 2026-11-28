@@ -1,5 +1,6 @@
 package com.roastlab.backend.service;
 
+import com.roastlab.backend.dto.PhoneRules;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -183,26 +184,60 @@ public class WhatsAppService {
     }
 }
 
+    /** La plantilla debe estar aprobada en Meta con el nombre roastlab_bienvenida. */
+    public String enviarPlantillaBienvenida(String telefono, String nombre) {
+        if (!whatsappDisponible()) {
+            throw new IllegalStateException("WhatsApp Cloud API no está configurada.");
+        }
+
+        String json = """
+            {
+              "messaging_product": "whatsapp",
+              "to": "%s",
+              "type": "template",
+              "template": {
+                "name": "roastlab_bienvenida",
+                "language": {"code": "es_MX"},
+                "components": [{
+                  "type": "body",
+                  "parameters": [
+                    {"type": "text", "text": "%s"}
+                  ]
+                }]
+              }
+            }
+            """.formatted(PhoneRules.normalizar(telefono), escaparJson(nombre));
+
+        return enviarJson(json);
+    }
+
+    private String enviarJson(String json) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://graph.facebook.com/" + apiVersion + "/" + phoneNumberId + "/messages"))
+                .timeout(Duration.ofSeconds(20))
+                .header("Authorization", "Bearer " + accessToken)
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                Matcher matcher = MESSAGE_ID.matcher(response.body());
+                return matcher.find() ? matcher.group(1) : "enviado";
+            }
+            Matcher matcher = ERROR_MESSAGE.matcher(response.body());
+            throw new IllegalStateException("Meta respondió " + response.statusCode()
+                + (matcher.find() ? ": " + matcher.group(1) : ""));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Envío de WhatsApp interrumpido.", e);
+        } catch (java.io.IOException e) {
+            throw new IllegalStateException("No se pudo contactar a WhatsApp: " + e.getMessage(), e);
+        }
+    }
+
     private static String normalizar(String telefono) {
-        String numero = telefono == null
-            ? ""
-            : telefono.replaceAll("[^0-9]", "");
-
-        if (numero.length() == 10) {
-            return "52" + numero;
-        }
-
-        if (numero.startsWith("521") && numero.length() == 13) {
-            return "52" + numero.substring(3);
-        }
-
-        if (numero.startsWith("52") && numero.length() == 12) {
-            return numero;
-        }
-
-        throw new IllegalArgumentException(
-            "El teléfono debe incluir un número mexicano válido de 10 dígitos o lada internacional."
-        );
+        return PhoneRules.normalizar(telefono);
     }
 
     private static String escaparJson(String texto) {

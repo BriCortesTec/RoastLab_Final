@@ -33,6 +33,19 @@ public class AuthController {
         return new MessageDTO("Si el correo está registrado, te enviamos un enlace para recuperar tu contraseña.");
     }
 
+    // POST evita consumir tokens cuando un escáner de enlaces visita la URL.
+    @PostMapping("/verify-email")
+    public MessageDTO verificarCorreo(@Valid @RequestBody VerifyEmailDTO dto) {
+        authService.verificarCorreo(dto.token());
+        return new MessageDTO("Correo verificado. Ya puedes iniciar sesión.");
+    }
+
+    @PostMapping("/resend-verification")
+    public MessageDTO reenviarVerificacion(@Valid @RequestBody ForgotPasswordDTO dto) {
+        authService.reenviarVerificacion(dto);
+        return new MessageDTO("Si la cuenta existe y aún no está verificada, enviaremos un nuevo enlace.");
+    }
+
     @PostMapping("/reset-password")
     public MessageDTO restablecer(@Valid @RequestBody ResetPasswordDTO dto) {
         authService.restablecerPassword(dto);

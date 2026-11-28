@@ -27,6 +27,10 @@ export const authService = {
   me: () => api.get('/auth/me').then(response => response.data),
   logout: () => api.post('/auth/logout'),
   updateProfile: (fields) => api.put('/auth/me', fields).then(response => response.data),
+  forgotPassword: (email) => api.post('/auth/forgot-password', {email}).then(response => response.data),
+  resendVerification: (email) => api.post('/auth/resend-verification', {email}).then(response => response.data),
+  resetPassword: (token, password) => api.post('/auth/reset-password', {token, password}).then(response => response.data),
+  verifyEmail: (token) => api.post('/auth/verify-email', {token}).then(response => response.data),
 };
 
 export const resourceService = {

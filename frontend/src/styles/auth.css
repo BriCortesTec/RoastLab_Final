@@ -152,3 +152,28 @@
     padding: 20px 17px;
   }
 }
+.auth-link {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--green, #244c39);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.success-note {
+  padding: 11px 13px;
+  border-radius: 8px;
+  background: #edf5ee;
+  color: #244c39;
+  line-height: 1.5;
+}
+
+.auth-action-layout {
+  grid-template-columns: 1fr;
+  min-height: 100vh;
+}

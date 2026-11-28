@@ -3,6 +3,7 @@ package com.roastlab.backend.service;
 
 import com.roastlab.backend.dto.NotificacionDTO;
 import com.roastlab.backend.dto.PageResponse;
+import com.roastlab.backend.dto.PhoneRules;
 import com.roastlab.backend.dto.PruebaNotificacionDTO;
 import com.roastlab.backend.entity.Notificacion;
 import com.roastlab.backend.entity.Usuario;
@@ -12,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,16 +30,25 @@ public class NotificacionService {
     private final WhatsAppService whatsapp;
     private final NotificacionRepository notificaciones;
     private final UsuarioRepository usuarios;
+    private final String welcomeTestRecipient;
+    private final String welcomeMode;
+    private final boolean roastNotificationsEnabled;
 
     public NotificacionService(
             MailService mailService,
             WhatsAppService whatsapp,
             NotificacionRepository notificaciones,
-            UsuarioRepository usuarios) {
+            UsuarioRepository usuarios,
+            @Value("${meta.whatsapp.welcome-test-recipient:}") String welcomeTestRecipient,
+            @Value("${meta.whatsapp.welcome-mode:test}") String welcomeMode,
+            @Value("${app.notifications.roast-completed.enabled:false}") boolean roastNotificationsEnabled) {
         this.mailService = mailService;
         this.whatsapp = whatsapp;
         this.notificaciones = notificaciones;
         this.usuarios = usuarios;
+        this.welcomeTestRecipient = welcomeTestRecipient;
+        this.welcomeMode = welcomeMode;
+        this.roastNotificationsEnabled = roastNotificationsEnabled;
     }
 
     /**
@@ -51,6 +62,10 @@ public class NotificacionService {
             BigDecimal salidaKg,
             BigDecimal maxTemp,
             BigDecimal duracionMin) {
+        if (!roastNotificationsEnabled) {
+            log.info("Avisos automáticos de tueste desactivados por configuración.");
+            return;
+        }
         Usuario u;
         try {
             u = usuarios.findById(usuarioId).orElse(null);
@@ -106,18 +121,68 @@ public class NotificacionService {
         }
     }
 
+    /** Envía el enlace privado solo por correo; WhatsApp recibe un saludo sin token. */
+    @Async
+    @Transactional
+    public void bienvenidaUsuario(Integer usuarioId, String enlaceVerificacion) {
+        Usuario usuario = usuarios.findById(usuarioId).orElse(null);
+        if (usuario == null) return;
+
+        String nombre = usuario.getNombre();
+        String texto = "Hola " + nombre + ", tu cuenta de RoastLab está lista. "
+            + "Verifica tu correo para iniciar sesión: " + enlaceVerificacion;
+        try {
+            mailService.enviar(usuario, "Bienvenida a RoastLab · verifica tu correo", texto);
+        } catch (Exception e) {
+            log.error("No se pudo enviar el correo de bienvenida.", e);
+        }
+
+        boolean testMode = "test".equalsIgnoreCase(welcomeMode);
+        boolean productionMode = "production".equalsIgnoreCase(welcomeMode);
+        if (!testMode && !productionMode) {
+            registrar(usuario, "WHATSAPP", "NO_CONFIGURADO", null,
+                "Bienvenida no enviada: modo de WhatsApp no reconocido.",
+                () -> { throw new IllegalStateException("Usa meta.whatsapp.welcome-mode=test o production."); });
+            return;
+        }
+        String destinatario = productionMode
+            ? PhoneRules.normalizar(usuario.getTelefono())
+            : welcomeTestRecipient == null || welcomeTestRecipient.isBlank()
+                ? null : PhoneRules.normalizar(welcomeTestRecipient);
+        if (destinatario == null) {
+            registrar(usuario, "WHATSAPP", "NO_CONFIGURADO", null,
+                "Bienvenida no enviada: falta un teléfono destino válido para el modo de WhatsApp configurado.",
+                () -> { throw new IllegalStateException("Revisa meta.whatsapp.welcome-mode y el teléfono destino configurado."); });
+            return;
+        }
+        registrar(usuario, "WHATSAPP", destinatario, null,
+            "Plantilla de bienvenida para " + nombre + " (sin enlaces ni tokens).",
+            () -> whatsapp.enviarPlantillaBienvenida(destinatario, nombre));
+    }
+
+    @Async
+    @Transactional
+    public void reenviarVerificacion(Integer usuarioId, String enlaceVerificacion) {
+        usuarios.findById(usuarioId).filter(u -> !Boolean.TRUE.equals(u.getCorreoVerificado()))
+            .ifPresent(usuario -> mailService.enviar(usuario,
+                "Verifica tu correo de RoastLab",
+                "Hola " + usuario.getNombre() + ",\n\nVerifica tu correo para activar RoastLab. "
+                    + "El enlace vence en 24 horas:\n" + enlaceVerificacion));
+    }
+
     public Notificacion enviarWhatsapp(
             Usuario u,
             String telefono,
             String texto) {
+        String destino = PhoneRules.normalizar(telefono);
 
         return registrar(
             u,
             "WHATSAPP",
-            telefono,
+            destino,
             null,
             texto,
-            () -> whatsapp.enviarWhatsapp(telefono, texto)
+            () -> whatsapp.enviarWhatsapp(destino, texto)
         );
     }
 

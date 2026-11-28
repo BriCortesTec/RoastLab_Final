@@ -35,6 +35,9 @@ public class Usuario {
     @Column(name = "activo", nullable = false)
     private Boolean activo = true;
 
+    @Column(name = "correo_verificado", nullable = false)
+    private Boolean correoVerificado = true;
+
     @Column(name = "fecha_registro", insertable = false, updatable = false)// los parametros: dejamos que MySQL asigne automaticamente "fecha_registro"
     private LocalDateTime fechaRegistro;//LocalDataTime representa la fecha y hora de registro
 
@@ -104,6 +107,9 @@ public class Usuario {
     public void setActivo(Boolean activo) {
         this.activo = activo;
     }
+
+    public Boolean getCorreoVerificado() { return correoVerificado; }
+    public void setCorreoVerificado(Boolean correoVerificado) { this.correoVerificado = correoVerificado; }
 
     public LocalDateTime getFechaRegistro() {
         return fechaRegistro;

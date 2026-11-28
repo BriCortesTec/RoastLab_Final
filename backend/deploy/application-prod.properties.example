@@ -7,12 +7,25 @@ app.jwt.secret=CAMBIAR_BASE64_ALEATORIO_openssl_rand_-base64_48
 app.cors.allowed-origins=https://roastlab.space,https://www.roastlab.space
 app.frontend-url=https://roastlab.space
 
-# Postfix local
-spring.mail.host=localhost
-spring.mail.port=25
-app.mail.from=no-reply@roastlab.space
+# Gmail SMTP (usar contraseña de aplicación; nunca la contraseña normal de Gmail).
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=CAMBIAR_POR_CORREO_GMAIL
+spring.mail.password=CAMBIAR_POR_CONTRASENA_DE_APLICACION
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+spring.mail.properties.mail.smtp.starttls.required=true
+app.mail.from=${spring.mail.username}
+spring.mail.properties.mail.smtp.connectiontimeout=5000
+spring.mail.properties.mail.smtp.timeout=8000
+spring.mail.properties.mail.smtp.writetimeout=8000
 
 # Meta WhatsApp Cloud API
 meta.whatsapp.phone-number-id=CAMBIAR
 meta.whatsapp.access-token=CAMBIAR
 meta.whatsapp.api-version=v25.0
+meta.whatsapp.welcome-test-recipient=CAMBIAR_POR_NUMERO_AUTORIZADO_DE_PRUEBAS
+meta.whatsapp.welcome-mode=test
+
+# Los avisos automáticos de tueste permanecen desactivados mientras se valida el flujo.
+app.notifications.roast-completed.enabled=false

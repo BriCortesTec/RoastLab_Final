@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.regex.Pattern;
 
-/** Envía correos por el Postfix local del VPS y registra el resultado en la tabla notificaciones. */
+/** Envía correos mediante SMTP (Gmail o Postfix, según el VPS) y guarda su estado. */
 @Service
 public class MailService {
     private static final Logger log = LoggerFactory.getLogger(MailService.class);
