@@ -6,13 +6,10 @@ import '../styles/layout.css';
  * Muestra el botón para controlar el menú lateral, la ruta actual (breadcrumb),
  * el estado de conexión de datos, notificaciones y el perfil rápido del usuario.
  */
-export default function Topbar({ user, title, demoMode, onOpenMenu, onNotify }) {
+export default function Topbar({ user, title, onOpenMenu, onNotify }) {
   // Extrae la inicial del nombre en mayúscula para el avatar (usa 'N' por defecto)
   const userInitial = user.name?.[0]?.toUpperCase() || 'N';
   
-  // Define la etiqueta según si la app usa datos locales de prueba o conexión real
-  const connectionLabel = demoMode ? 'Demo local' : 'Acceso por API';
-
   return (
     <header className="topbar">
       {/* Sección izquierda: Botón de menú y ruta de navegación */}
@@ -33,13 +30,8 @@ export default function Topbar({ user, title, demoMode, onOpenMenu, onNotify }) 
         </div>
       </div>
 
-      {/* Sección derecha: Indicador de entorno, notificaciones y usuario activo */}
+      {/* Sección derecha: notificaciones y usuario activo */}
       <div className="top-actions">
-        {/* Píldora que indica el origen de los datos */}
-        <span className="mode-pill">
-          <i /> {connectionLabel}
-        </span>
-
         {/* Botón de notificaciones (el <i /> interno suele funcionar como punto indicador) */}
         <button
           className="icon-button notification-button"

@@ -14,10 +14,10 @@ public record LoteCafeDTO(
     String origin,
     String variety,
     String process,
-    @DecimalMin(value = "0.0", message = "La densidad no puede ser negativa.") BigDecimal density,
-    @DecimalMin(value = "0.0", message = "La humedad no puede ser negativa.")
+    @NotNull(message = "La densidad es obligatoria.") @DecimalMin(value = "0.0", inclusive = false, message = "La densidad debe ser mayor a cero.") BigDecimal density,
+    @NotNull(message = "La humedad es obligatoria.") @DecimalMin(value = "0.0", message = "La humedad no puede ser negativa.")
     @DecimalMax(value = "100.0", message = "La humedad no puede pasar de 100%.") BigDecimal humidity,
-    @Min(value = 0, message = "La altitud no puede ser negativa.") @Max(value = 9000, message = "Altitud fuera de rango.") Integer altitude,
+    @NotNull(message = "La altitud es obligatoria.") @Min(value = 0, message = "La altitud no puede ser negativa.") @Max(value = 9000, message = "Altitud fuera de rango.") Integer altitude,
     LocalDate harvest,
     @NotNull(message = "El peso disponible es obligatorio.")
     @DecimalMin(value = "0.0", message = "El peso no puede ser negativo.") BigDecimal weight,

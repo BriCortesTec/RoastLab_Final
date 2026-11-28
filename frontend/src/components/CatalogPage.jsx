@@ -10,6 +10,7 @@ import '../styles/catalogs.css';
 
 export default function CatalogPage({ kind, items, relatedCafes, onSave, notify, canManage = true, remoteMode = false, remoteSearch = '', onRemoteSearch, remotePage = 0, remoteTotalElements = 0, remoteTotalPages = 0, onRemotePageChange, remoteLoading = false, remoteSaving = false, remoteError = '', onRemoteSave, onRemoteDelete, relatedLots = [] }) {
   const [removing,setRemoving] = useState(null);
+  const [pendingSave,setPendingSave] = useState(null);
   const [fieldErrors,setFieldErrors] = useState({});
   const meta = MODULES[kind];
   const [search,setSearch]=useState(''); const [page,setPage]=useState(1); const [modal,setModal]=useState(false); const [editing,setEditing]=useState(null); const [viewingProfile,setViewingProfile]=useState(null); const [error,setError]=useState('');
@@ -36,16 +37,22 @@ export default function CatalogPage({ kind, items, relatedCafes, onSave, notify,
     setFieldErrors(errors);
     setError('');
     if (Object.keys(errors).length) return;
+    setPendingSave(item);
+  }
+  async function confirmSave() {
+    if (!pendingSave) return;
     try {
-      if (remoteMode) await onRemoteSave(item, editing);
-      else onSave(editing ? items.map(row => row.id === editing.id ? item : row) : [item, ...items]);
+      if (remoteMode) await onRemoteSave(pendingSave, editing);
+      else onSave(editing ? items.map(row => row.id === editing.id ? pendingSave : row) : [pendingSave, ...items]);
       setModal(false);
+      setPendingSave(null);
       if (!remoteMode) notify('Registro guardado.');
     } catch (failure) {
       const fields = {...failure.fieldErrors};
       if (fields.cafeId) fields.coffee = fields.cafeId;
       setFieldErrors(fields);
       if (!meta.fields.some(([key]) => fields[key])) setError(failure.message);
+      setPendingSave(null);
     }
   }
   async function remove(item) {
@@ -68,6 +75,7 @@ export default function CatalogPage({ kind, items, relatedCafes, onSave, notify,
     <div className="table-footer"><span>Página {currentPage} de {pageCount}</span><div><button className="button button-outline button-small" disabled={currentPage<=1||remoteLoading} onClick={()=>remoteMode?onRemotePageChange(remotePage-1):setPage(page-1)}>Anterior</button><button className="button button-outline button-small" disabled={currentPage>=pageCount||remoteLoading} onClick={()=>remoteMode?onRemotePageChange(remotePage+1):setPage(page+1)}>Siguiente</button></div></div>
     {modal && (kind === 'profiles' ? <ProfileEditor editing={editing} lots={relatedLots} saving={remoteSaving} onClose={() => setModal(false)} onSave={async (profile) => { if (remoteMode) await onRemoteSave(profile, editing); else onSave(editing ? items.map((row) => row.id === editing.id ? profile : row) : [profile, ...items]); setModal(false); if (!remoteMode) notify(editing ? 'Perfil actualizado.' : 'Perfil agregado.'); }} /> : <div className="modal-overlay" onMouseDown={e=>{if(e.target===e.currentTarget)setModal(false);}}><form className="modal-card" noValidate onSubmit={save}><div className="modal-header"><div><span className="eyebrow">CATÁLOGO ROASTLAB</span><h3>{editing?'Editar':'Agregar'} {meta.singular}</h3></div><button type="button" className="icon-button" aria-label="Cerrar" onClick={()=>setModal(false)}><Icon name="close"/></button></div><div className="modal-fields">{meta.fields.map(([key,label,type,required,options])=><label className={`field ${['notes','description','flavorNotes'].includes(key)?'field-wide':''}`} key={key}>{label}{type==='select'?<select className="input" name={key} required={required} defaultValue={remoteMode&&kind==='lots'&&key==='coffee'?(editing?.cafeId??''):(editing?.[key]||'')}><option value="" disabled>Selecciona…</option>{(key==='coffee'?relatedCafes.map(cafe=>({value:remoteMode?cafe.id:cafe.name,label:cafe.name})):options.map(option=>({value:option,label:option}))).map(option=><option key={option.value} value={option.value}>{option.label}</option>)}</select>:<input className="input" type={type} name={key} required={required} min={type==='number'?0:undefined} max={key==='humidity'?100:undefined} step={type==='number'?'any':undefined} defaultValue={editing?.[key]??''} placeholder={type==='number'?'0':''}/>}{fieldErrors[key] && <small role="alert">{fieldErrors[key]}</small>}</label>)}</div>{error&&<div className="error-note">{error}</div>}<div className="modal-actions"><button type="button" className="button button-outline" disabled={remoteSaving} onClick={()=>setModal(false)}>Cancelar</button><button className="button button-primary" disabled={remoteSaving}>{remoteSaving?'Guardando…':`Guardar ${meta.singular}`}</button></div></form></div>)}
     {removing && <ConfirmDialog title={`¿Eliminar “${removing.name || removing.code}”?`} confirmText="Eliminar" onCancel={() => setRemoving(null)} onConfirm={() => remove(removing)} />}
+    {pendingSave && <ConfirmDialog title={editing ? `¿Guardar cambios del ${meta.singular}?` : `¿Agregar ${meta.singular}?`} message="Confirma para guardar este registro." confirmText="Guardar" cancelText="Seguir editando" loading={remoteSaving} onCancel={() => setPendingSave(null)} onConfirm={confirmSave} />}
     {viewingProfile&&<div className="modal-overlay" onMouseDown={(event)=>{if(event.target===event.currentTarget)setViewingProfile(null);}}><section className="modal-card curve-modal"><div className="curve-modal-header"><div><span className="eyebrow">PERFIL DE REFERENCIA</span><h3>{viewingProfile.name}</h3><p>{viewingProfile.level} · {viewingProfile.duration} min · {viewingProfile.demo?'Datos de demostración':'Creado desde un tueste guardado'}</p></div><button className="icon-button" type="button" aria-label="Cerrar curva" onClick={()=>setViewingProfile(null)}><Icon name="close"/></button></div><TemperatureChart points={viewingProfile.measurements||[]} events={viewingProfile.events||[]} elapsed={Number(viewingProfile.duration||0)*60} emptyLabel="Este perfil todavía no tiene una curva guardada."/><div className="profile-reference-data"><b>Datos de referencia</b><span>Lote: {referenceLotLabel}{referenceLot?.coffee ? ` · ${referenceLot.coffee}` : ''}</span><span>Entrada: {referenceInput == null || referenceInput === '' ? '—' : `${referenceInput} kg`}</span><span>Salida: {referenceOutput == null || referenceOutput === '' ? '—' : `${referenceOutput} kg`}</span></div>{viewingProfile.events?.length>0&&<div className="saved-event-list">{viewingProfile.events.map((event)=><span className={`saved-event-chip saved-event-chip-${event.type}`} key={`${event.type}-${event.seconds}`}><b>{event.short||event.type}</b> {formatTime(event.seconds)}{event.temperature!==null&&event.temperature!==undefined?` · ${event.temperature} °C`:''}</span>)}</div>}{viewingProfile.adjustments?.length>0&&<div className="machine-adjustment-list machine-adjustment-readonly"><b>Ajustes de referencia</b>{viewingProfile.adjustments.map((adjustment,index)=><div key={adjustment.id||`${adjustment.type}-${index}`}><b>{formatTime(adjustment.seconds)}</b><span>{adjustment.label}: {adjustment.value}{adjustment.unit ? ` ${adjustment.unit}` : ''}</span>{adjustment.temperature!==null&&adjustment.temperature!==undefined&&<small>{adjustment.temperature} °C</small>}</div>)}</div>}{viewingProfile.flavorNotes&&<div className="profile-flavor-notes"><b>Notas de sabor</b><span>{viewingProfile.flavorNotes}</span></div>}<div className="modal-actions"><button className="button button-outline" type="button" onClick={()=>setViewingProfile(null)}>Cerrar</button></div></section></div>}
   </section>;
 }

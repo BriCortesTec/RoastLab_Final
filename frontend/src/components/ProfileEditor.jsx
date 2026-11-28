@@ -1,6 +1,7 @@
 import useFormErrors from '../hooks/useFormErrors.js';
 import { useEffect, useState } from 'react';
 import Icon from './Icon.jsx';
+import ConfirmDialog from './ConfirmDialog.jsx';
 import TemperatureChart from './TemperatureChart.jsx';
 import '../styles/roasts.css';
 
@@ -86,6 +87,9 @@ export default function ProfileEditor({ editing, lots = [], saving = false, onSa
   const [editingMeasurementIndex, setEditingMeasurementIndex] = useState(null);
   const [adjustments, setAdjustments] = useState(() => [...(editing?.adjustments || [])].sort((a, b) => a.seconds - b.seconds));
   const [editingAdjustmentIndex, setEditingAdjustmentIndex] = useState(null);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const [confirmSave, setConfirmSave] = useState(false);
+  const [pendingProfile, setPendingProfile] = useState(null);
   const [adjustmentType, setAdjustmentType] = useState('heat');
   const [adjustmentValue, setAdjustmentValue] = useState('');
   const [adjustmentUnit, setAdjustmentUnit] = useState('%');
@@ -261,6 +265,20 @@ export default function ProfileEditor({ editing, lots = [], saving = false, onSa
     setMetadata((current) => ({ ...current, adjustmentLabel: '' }));
     setError('');
   };
+  const requestClose = () => {
+    if (!saving) setConfirmDiscard(true);
+  };
+  const leaveCaptureMode = () => {
+    setCaptureMode('manual');
+    setStartedAt(null);
+    setReadingStartedAt(null);
+    setElapsed(0);
+  };
+  const confirmDiscardChanges = () => {
+    leaveCaptureMode();
+    setConfirmDiscard(false);
+    onClose();
+  };
   const saveProfile = async (event) => {
     event.preventDefault();
     setError('');
@@ -298,13 +316,26 @@ export default function ProfileEditor({ editing, lots = [], saving = false, onSa
       measurements: savedMeasurements,
       adjustments,
     };
-    try { await onSave(payload); }
-    catch (saveError) { fromServer(saveError, ['name','level','description','flavorNotes','referenceLotId','referenceInputKg','referenceOutputKg']); }
+    setPendingProfile(payload);
+    setConfirmSave(true);
+  };
+  const confirmSaveProfile = async () => {
+    if (!pendingProfile) return;
+    try {
+      await onSave(pendingProfile);
+      leaveCaptureMode();
+      setPendingProfile(null);
+      setConfirmSave(false);
+    } catch (saveError) {
+      setConfirmSave(false);
+      setPendingProfile(null);
+      fromServer(saveError, ['name','level','description','flavorNotes','referenceLotId','referenceInputKg','referenceOutputKg']);
+    }
   };
 
-  return <div className="modal-overlay profile-builder-overlay" onMouseDown={(event) => { if (event.target === event.currentTarget && !saving) onClose(); }}>
+  return <div className="modal-overlay profile-builder-overlay" onMouseDown={(event) => { if (event.target === event.currentTarget) requestClose(); }}>
     <form className="modal-card profile-builder-modal" onSubmit={saveProfile} noValidate>
-      <div className="modal-header"><div><span className="eyebrow">CURVA DE REFERENCIA</span><h3>{editing ? 'Editar perfil de tueste' : 'Crear perfil de tueste'}</h3><p>Registra los tiempos y temperaturas para construir la curva que quieres repetir.</p></div><button type="button" className="icon-button" aria-label="Cerrar" disabled={saving} onClick={onClose}><Icon name="close" /></button></div>
+      <div className="modal-header"><div><span className="eyebrow">CURVA DE REFERENCIA</span><h3>{editing ? 'Editar perfil de tueste' : 'Crear perfil de tueste'}</h3><p>Registra los tiempos y temperaturas para construir la curva que quieres repetir.</p></div><button type="button" className="icon-button" aria-label="Cerrar" disabled={saving} onClick={requestClose}><Icon name="close" /></button></div>
       <div className="profile-builder-content roast-form">
         <section className="roast-section profile-metadata-section"><span className="form-section-title"><span>1</span> Datos del perfil</span><div className="form-grid">
           <label className="field field-wide">Nombre del perfil<input className="input" name="name" value={metadata.name} onChange={setField} minLength="3" maxLength="100" placeholder="Ej. Balanceado para espresso" required />{fields.name && <small role="alert">{fields.name}</small>}</label>
@@ -334,9 +365,11 @@ export default function ProfileEditor({ editing, lots = [], saving = false, onSa
             {adjustments.length ? <div className="machine-adjustment-list">{adjustments.map((item, index) => <button className={`machine-adjustment-row ${editingAdjustmentIndex === index ? 'machine-adjustment-row-selected' : ''}`} type="button" key={item.id || `${item.seconds}-${index}`} onClick={() => selectAdjustment(index)}><b>{formatTime(item.seconds)}</b><span>{item.label}: {item.value}{item.unit ? ` ${item.unit}` : ''}</span>{item.temperature != null && <small>{item.temperature} °C</small>}</button>)}</div> : <span className="adjustment-empty">Aún no se registran cambios de máquina.</span>}
           </section>}
           {error && <div className="error-note" role="alert">{error}</div>}
-          <div className="roast-actions"><button className="button button-outline" type="button" disabled={saving} onClick={onClose}>Cancelar</button><button className="button button-primary" type="submit" disabled={saving}>{saving ? 'Guardando…' : <><Icon name="check" size={17} /> Guardar perfil</>}</button></div>
+          <div className="roast-actions"><button className="button button-outline" type="button" disabled={saving} onClick={requestClose}>Descartar cambios</button><button className="button button-primary" type="submit" disabled={saving}>{saving ? 'Guardando…' : <><Icon name="check" size={17} /> Guardar perfil</>}</button></div>
         </section>
       </div>
     </form>
+    <ConfirmDialog isOpen={confirmDiscard} title="¿Descartar cambios?" message="Se cerrará el editor y se descartarán las lecturas y ajustes que no hayas guardado." confirmText="Descartar cambios" cancelText="Seguir editando" variant="danger" onCancel={() => setConfirmDiscard(false)} onConfirm={confirmDiscardChanges} />
+    <ConfirmDialog isOpen={confirmSave} title={editing ? '¿Guardar cambios del perfil?' : '¿Guardar perfil?'} message="Al confirmar, el perfil se enviará al servidor y saldrás del modo de captura." confirmText="Guardar perfil" cancelText="Seguir editando" loading={saving} onCancel={() => { setConfirmSave(false); setPendingProfile(null); }} onConfirm={confirmSaveProfile} />
   </div>;
 }

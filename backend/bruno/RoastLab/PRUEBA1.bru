@@ -1,0 +1,29 @@
+meta {
+  name: PRUEBA1
+  type: http
+  seq: 7
+}
+
+post {
+  url: http://localhost:8080/api/notificaciones/prueba
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "channel": "email",
+    "to": "roastlab.alert@gmail.com",
+    "message": "Prueba de envío de correo desde RoastLab. Integración Gmail funcionando."
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+  forwardAuthorizationHeader: false
+}
